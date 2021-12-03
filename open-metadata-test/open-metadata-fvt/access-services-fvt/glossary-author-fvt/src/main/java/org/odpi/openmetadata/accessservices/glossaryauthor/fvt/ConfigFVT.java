@@ -101,6 +101,8 @@ public class ConfigFVT
         } else {
             System.out.println("Config MaxPageSize is " + config.getMaxPageSize());
         }
+
+        System.out.println(config.toString());
 /*
             ffdcrestClient
         Optional<Config> config;//configClient.getConfig(userId);

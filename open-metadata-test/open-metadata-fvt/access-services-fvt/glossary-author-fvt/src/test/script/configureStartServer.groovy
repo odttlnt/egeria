@@ -184,8 +184,8 @@ System.out.println("=== Enabling Glossary Author view Service   : " + serverView
 post2g = new URL(baseURL + "/open-metadata/admin-services/users/" + user + "/servers/" + serverView + "/view-services/glossary-author" ).openConnection()
 post2g.setRequestMethod("POST")
 post2g.setRequestProperty("Content-Type", "application/json")
-
-
+///
+//https://localhost:9443/open-metadata/admin-services/users/garygeeke/servers/cocoView1/view-services/glossary-author
 post2g.setDoOutput(true)
 HashMap<String, String> viewServiceRequestBodyMap = new HashMap<>()
 viewServiceRequestBodyMap.put("class","ViewServiceConfig")
@@ -207,8 +207,9 @@ println(postRC2g);
 if(postRC2g.equals(200)) {
     println(post2g.getInputStream().getText());
 } else {
-    println(post2g.getErrorStream().getText())
+    println("Error " + post2g.getErrorStream().getText())
 }
+
 
 
 // --- Launch the server - any errors here and we exit
@@ -224,7 +225,14 @@ if(postRC3g.equals(200)) {
     println(post3g.getInputStream().getText());
 }
 
-
+post1g = new URL(baseURL + "/open-metadata/admin-services/users/" + user + "/servers/" + serverView + "/configuration" ).openConnection()
+post1g.setRequestMethod("GET")
+post1g.setRequestProperty("Content-Type", "application/json")
+postRC1g = post1g.getResponseCode();
+println(postRC1g);
+if(postRC1g.equals(200)) {
+    println(post1g.getInputStream().getText());
+}
 
 
 // --- We're done

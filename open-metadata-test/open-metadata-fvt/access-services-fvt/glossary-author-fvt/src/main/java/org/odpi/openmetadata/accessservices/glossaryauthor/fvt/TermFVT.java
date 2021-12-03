@@ -2,9 +2,9 @@
 /* Copyright Contributors to the ODPi Egeria project. */
 package org.odpi.openmetadata.accessservices.glossaryauthor.fvt;
 
+import org.odpi.openmetadata.accessservices.glossaryauthor.fvt.client.GlossaryAuthorViewRestClient;
+import org.odpi.openmetadata.accessservices.glossaryauthor.fvt.client.term.GlossaryAuthorViewTermClient;
 import org.odpi.openmetadata.accessservices.subjectarea.client.SubjectAreaNodeClient;
-import org.odpi.openmetadata.accessservices.subjectarea.client.SubjectAreaRestClient;
-import org.odpi.openmetadata.accessservices.subjectarea.client.nodes.terms.SubjectAreaTermClient;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.classifications.Confidence;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.classifications.Confidentiality;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.classifications.Criticality;
@@ -20,6 +20,8 @@ import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.graph
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.nodesummary.CategorySummary;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.nodesummary.GlossarySummary;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.term.Term;
+import org.odpi.openmetadata.adminservices.configuration.properties.OMAGServerConfig;
+import org.odpi.openmetadata.adminservices.configuration.properties.ViewServiceConfig;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.InvalidParameterException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException;
@@ -30,19 +32,20 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * FVT resource to call subject area term client API
+ * FVT resource to call Glossary Author term client API
  */
 public class TermFVT {
     private static final String DEFAULT_TEST_GLOSSARY_NAME = "Test Glossary for term FVT";
     private static final String DEFAULT_TEST_TERM_NAME = "Test term A";
     private static final String DEFAULT_TEST_TERM_NAME_UPDATED = "Test term A updated";
     private SubjectAreaNodeClient<Term> subjectAreaTerm = null;
-    private SubjectAreaTermClient subjectAreaTermClient = null;
+    private GlossaryAuthorViewTermClient glossaryAuthorViewTermClient = null;
     private GlossaryFVT glossaryFVT =null;
     private CategoryFVT categoryFVT =null;
     private SubjectAreaDefinitionCategoryFVT subjectAreaFVT =null;
     private String userId =null;
     private int existingTermCount = 0;
+    private String omagServer = "";
     /*
      * Keep track of all the created guids in this set, by adding create and restore guids and removing when deleting.
      * At the end of the test it will delete any remaining guids.
@@ -68,19 +71,49 @@ public class TermFVT {
 
     }
     public TermFVT(String url,String serverName,String userId) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
-        SubjectAreaRestClient client = new SubjectAreaRestClient(serverName, url);
-        subjectAreaTerm = new SubjectAreaTermClient<>(client);
-        subjectAreaTermClient = (SubjectAreaTermClient)subjectAreaTerm;
+        GlossaryAuthorViewRestClient client = new GlossaryAuthorViewRestClient(serverName, url);
+        //subjectAreaTerm = new SubjectAreaTermClient<>(client);
+        glossaryAuthorViewTermClient = new GlossaryAuthorViewTermClient(client);
 
         System.out.println("Create a glossary");
         glossaryFVT = new GlossaryFVT(url,serverName,userId);
         categoryFVT = new CategoryFVT(url, serverName,userId);
+        //optionKey
+        retrieveOmagConfig();
+        omagServer = retrieveOmagServerName("omagserverName");
+
+        System.out.println("*****   *** " + omagServer + "*****   *** " );
+
         subjectAreaFVT = new SubjectAreaDefinitionCategoryFVT(url, serverName,userId);
 
         this.userId=userId;
         existingTermCount = findTerms("").size();
         System.out.println("existingTermCount " + existingTermCount);
     }
+
+    private String retrieveOmagConfig() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+        OMAGServerConfig config = glossaryAuthorViewTermClient.getConfig(userId);
+        System.out.println(config.toString());
+        return config.getLocalServerName();
+    }
+
+    private String retrieveOmagServerName(String configKey) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+        List<ViewServiceConfig> viewServiceConfigs = glossaryAuthorViewTermClient.getViewServiceConfig(userId);
+        Map<String,Object> viewServiceOptions;
+        System.out.println("  viewServiceConfigs  " + viewServiceConfigs.toString());
+
+        for (ViewServiceConfig vsc: viewServiceConfigs){
+            System.out.println(vsc.getViewServiceName());
+            if (vsc.getViewServiceName().equals("Glossary Author")) {
+                    System.out.println("$$$$$$$$$$$$  FOUND GLOSSARY AUTHOR $$$$$$$$$$$");
+                    System.out.println(vsc.getViewServiceOptions().toString());
+                    return  String.valueOf(vsc.getViewServiceOptions().get(configKey));
+                }
+            }
+        return null;
+    }
+
+
     public static void runWith2Servers(String url) throws GlossaryAuthorFVTCheckedException, InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
         runIt(url, FVTConstants.SERVER_NAME1, FVTConstants.USERID);
         runIt(url, FVTConstants.SERVER_NAME2, FVTConstants.USERID);
@@ -583,7 +616,7 @@ public class TermFVT {
         FindRequest findRequest = new FindRequest();
         findRequest.setPageSize(pageSize);
         findRequest.setStartingFrom(startingFrom);
-        return subjectAreaTermClient.getCategories(userId, termGuid, findRequest);
+        return glossaryAuthorViewTermClient.getCategories(userId, termGuid, findRequest);
     }
 
     private void testCategorizedTermsWithSearchCriteria() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, GlossaryAuthorFVTCheckedException {
