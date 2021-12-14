@@ -79,6 +79,7 @@ task startServer(dependsOn: ['cleanData',':open-metadata-distribution:open-metad
 //             "-Djavax.net.debug=ssl:handshake:verbose:keymanager:trustmanager", //Troubleshooting removeLater
             "-Dlogging.level.org.apache.tomcat=DEBUG" ,
              "-Dlogging.level.org.apache.catalina=DEBUG",
+             "-Dlogging.level.org.odpi.openmetadata.viewservices.glossaryauthor.server=DEBUG",
              "-jar",
              "${distdir}/server/server-chassis-spring-${project.version}.jar" ]
     // Setting the output directories to be the same for ALL FVTs acts as a synchronization mechanism

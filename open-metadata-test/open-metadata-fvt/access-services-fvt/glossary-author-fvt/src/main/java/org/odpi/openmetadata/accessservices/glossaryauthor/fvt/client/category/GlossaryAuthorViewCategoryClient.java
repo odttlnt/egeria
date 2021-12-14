@@ -9,6 +9,7 @@ import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.gloss
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.graph.Relationship;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.term.Term;
 import org.odpi.openmetadata.accessservices.subjectarea.responses.SubjectAreaOMASAPIResponse;
+import org.odpi.openmetadata.accessservices.subjectarea.utils.QueryParams;
 import org.odpi.openmetadata.commonservices.ffdc.rest.GenericResponse;
 import org.odpi.openmetadata.commonservices.ffdc.rest.ResponseParameterization;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.InvalidParameterException;
@@ -169,8 +170,31 @@ public class GlossaryAuthorViewCategoryClient implements GlossaryAuthorViewCateg
     }
 
     @Override
-    public List<Term> getTerms(String userId, String categoryGuid, FindRequest findRequest) {
-        return null;
+    public List<Term> getTerms(String userId, String guid, FindRequest findRequest) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException{
+        return getTerms(userId, guid, findRequest, false, true,null);
+    }
+
+
+    public List<Term> getTerms(String userId, String guid, FindRequest findRequest,boolean exactValue ,boolean ignoreCase, Integer maximumPageSizeOnRestCall) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+        ResolvableType resolvableType = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, Term.class);
+        String urnTemplate = BASE_URL +  "/%s/terms";
+        ParameterizedTypeReference<GenericResponse<Term>> type = ParameterizedTypeReference.forType(resolvableType.getType());
+
+        QueryParams queryParams = new QueryParams()
+                .setExactValue(exactValue)
+                .setIgnoreCase(ignoreCase);
+
+        GenericResponse<Term> response = client.getByIdRESTCall(userId,
+                guid,
+                getMethodInfo("getTerms"),
+                type,
+                urnTemplate,
+                findRequest,
+                maximumPageSizeOnRestCall,
+                queryParams);
+        //GenericResponse<Category> response = client.getByIdRESTCall(userId ,guid, methodInfo, type, urlTemplate);
+
+        return response.results();
     }
 
     @Override

@@ -70,6 +70,15 @@ public class SubjectAreaDefinitionCategoryFVT
         System.out.println("existingSubjectAreaCount " + existingSubjectAreaCount);
     }
 
+    public SubjectAreaDefinitionCategoryFVT(String url,String serverName,String omagServerName, String userId) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+        SubjectAreaRestClient client = new SubjectAreaRestClient(omagServerName, url);
+        subjectAreaCategory = new SubjectAreaCategoryClient<>(client);
+        glossaryFVT = new GlossaryFVT(url,serverName,userId);
+        this.userId=userId;
+        existingSubjectAreaCount = findSubjectAreaDefinitions("").size();
+        System.out.println("existingSubjectAreaCount " + existingSubjectAreaCount);
+    }
+
     public static void runIt(String url, String serverName, String userId) throws GlossaryAuthorFVTCheckedException, InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
         try
         {

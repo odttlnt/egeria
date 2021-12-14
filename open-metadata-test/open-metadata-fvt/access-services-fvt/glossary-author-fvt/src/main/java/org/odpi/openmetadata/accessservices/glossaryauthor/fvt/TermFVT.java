@@ -28,6 +28,7 @@ import org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedExcepti
 import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.SequencingOrder;
 
 import java.io.IOException;
+//import java.security.InvalidParameterException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -70,9 +71,11 @@ public class TermFVT {
         }
 
     }
-    public TermFVT(String url,String serverName,String userId) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+    public TermFVT(String url,String serverName,String userId) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
         GlossaryAuthorViewRestClient client = new GlossaryAuthorViewRestClient(serverName, url);
         //subjectAreaTerm = new SubjectAreaTermClient<>(client);
+        this.userId=userId;
+
         glossaryAuthorViewTermClient = new GlossaryAuthorViewTermClient(client);
 
         System.out.println("Create a glossary");
@@ -80,34 +83,46 @@ public class TermFVT {
         categoryFVT = new CategoryFVT(url, serverName,userId);
         //optionKey
         retrieveOmagConfig();
-        omagServer = retrieveOmagServerName("omagserverName");
+        retrieveOmagServerName();
+        omagServer = retrieveOmagServerName("Glossary Author");
 
         System.out.println("*****   *** " + omagServer + "*****   *** " );
 
-        subjectAreaFVT = new SubjectAreaDefinitionCategoryFVT(url, serverName,userId);
+        subjectAreaFVT = new SubjectAreaDefinitionCategoryFVT(url, serverName,omagServer,userId);
 
-        this.userId=userId;
         existingTermCount = findTerms("").size();
         System.out.println("existingTermCount " + existingTermCount);
     }
 
-    private String retrieveOmagConfig() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+    private String retrieveOmagConfig() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
         OMAGServerConfig config = glossaryAuthorViewTermClient.getConfig(userId);
         System.out.println(config.toString());
+        System.out.println(config.getViewServicesConfig().toString());
         return config.getLocalServerName();
     }
+    private ViewServiceConfig retrieveGlossaryAuthorConfig() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
+         return glossaryAuthorViewTermClient.getGlossaryAuthViewServiceConfig(userId);
 
-    private String retrieveOmagServerName(String configKey) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
-        List<ViewServiceConfig> viewServiceConfigs = glossaryAuthorViewTermClient.getViewServiceConfig(userId);
+    }
+
+    private String retrieveOmagServerName() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+        ViewServiceConfig config = retrieveGlossaryAuthorConfig();
+        System.out.println(config.toString());
+        System.out.println(config.getOMAGServerName());//getViewServicesConfig().toString());
+        return config.getOMAGServerName();
+    }
+
+    private String retrieveOmagServerName(String viewServiceName) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
+        List<ViewServiceConfig> viewServiceConfigs = glossaryAuthorViewTermClient.getViewServiceConfigs(userId);
         Map<String,Object> viewServiceOptions;
         System.out.println("  viewServiceConfigs  " + viewServiceConfigs.toString());
 
         for (ViewServiceConfig vsc: viewServiceConfigs){
             System.out.println(vsc.getViewServiceName());
-            if (vsc.getViewServiceName().equals("Glossary Author")) {
+            if (vsc.getViewServiceName().equals(viewServiceName)) {
                     System.out.println("$$$$$$$$$$$$  FOUND GLOSSARY AUTHOR $$$$$$$$$$$");
-                    System.out.println(vsc.getViewServiceOptions().toString());
-                    return  String.valueOf(vsc.getViewServiceOptions().get(configKey));
+                    System.out.println(String.valueOf(vsc.getOMAGServerPlatformRootURL()));
+                    return  String.valueOf(vsc.getOMAGServerName());
                 }
             }
         return null;
@@ -119,7 +134,7 @@ public class TermFVT {
         runIt(url, FVTConstants.SERVER_NAME2, FVTConstants.USERID);
     }
 
-    public static void runIt(String url, String serverName, String userId) throws GlossaryAuthorFVTCheckedException, InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+    public static void runIt(String url, String serverName, String userId) throws GlossaryAuthorFVTCheckedException, InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
         try {
             System.out.println("TermFVT runIt started");
             TermFVT fvt =new TermFVT(url,serverName,userId);
@@ -132,12 +147,12 @@ public class TermFVT {
             throw error;
         }
     }
-    public static int getTermCount(String url, String serverName, String userId) throws InvalidParameterException, UserNotAuthorizedException, PropertyServerException, GlossaryAuthorFVTCheckedException {
+    public static int getTermCount(String url, String serverName, String userId) throws InvalidParameterException, UserNotAuthorizedException, PropertyServerException, GlossaryAuthorFVTCheckedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
         TermFVT fvt = new TermFVT(url, serverName, userId);
         return fvt.findTerms("").size();
     }
 
-    public void run() throws GlossaryAuthorFVTCheckedException, InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+    public void run() throws GlossaryAuthorFVTCheckedException, InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
         Glossary glossary= glossaryFVT.createGlossary(DEFAULT_TEST_GLOSSARY_NAME);
         System.out.println("Create a term1");
         String glossaryGuid = glossary.getSystemAttributes().getGUID();
@@ -149,6 +164,7 @@ public class TermFVT {
         System.out.println("Create a term2 using glossary userId");
 
         FindRequest findRequest = new FindRequest();
+        findRequest.setSearchCriteria("");
         List<Term> results = glossaryFVT.getTerms(glossaryGuid, findRequest);
         if (results.size() != 2) {
             throw new GlossaryAuthorFVTCheckedException("ERROR: Expected 2 back on getGlossaryTerms " + results.size());
@@ -218,7 +234,7 @@ public class TermFVT {
 //            throw new SubjectAreaFVTCheckedException("ERROR: Governance actions criticality not returned as expected. It is " + updatedTerm3.getGovernanceActions().getCriticality().getLevel().getName());
 //        }
         String spacedTermName = "This is a Term with spaces in name";
-        int allcount  = subjectAreaTerm.findAll(userId).size();
+        int allcount  = glossaryAuthorViewTermClient.findAll(userId).size();
         int yyycount = findTerms("yyy").size();
         int zzzcount = findTerms("zzz").size();
         int spacedTermcount = findTerms( spacedTermName).size();
@@ -248,7 +264,7 @@ public class TermFVT {
             throw new GlossaryAuthorFVTCheckedException("ERROR: allcount Expected " + allcount + 4 + " back on the find got " +results.size());
         }
 
-        results = subjectAreaTerm.findAll(userId); //it's find all terms
+        results = glossaryAuthorViewTermClient.findAll(userId); //it's find all terms
         if (results.size() !=allcount + 4 ) {
             throw new GlossaryAuthorFVTCheckedException("ERROR: allcount2 Expected " + allcount + 4 + " back on the find got " +results.size());
         }
@@ -356,6 +372,7 @@ public class TermFVT {
         // test categories
 
         Category cat1 = categoryFVT.createCategoryWithGlossaryGuid("cat1", glossaryGuid);
+
         Category cat2 = subjectAreaFVT.createSubjectAreaDefinitionWithGlossaryGuid("cat2", glossaryGuid);
         Category cat3 = categoryFVT.createCategoryWithGlossaryGuid("cat3",glossaryGuid);
         CategorySummary cat1Summary = new CategorySummary();
@@ -383,6 +400,9 @@ public class TermFVT {
         if (!createdTerm4cats.getCategories().get(0).getGuid().equals(cat1Summary.getGuid())) {
             throw new GlossaryAuthorFVTCheckedException("ERROR: Expected response category guid to match the requested category guid.");
         }
+        if (cat1.getSystemAttributes().getGUID() != null) System.out.println("guid is null 1" + cat1.getSystemAttributes().getGUID());
+
+        if (categoryFVT.getTerms(cat1.getSystemAttributes().getGUID()) == null) System.out.println("Its null");
         if (categoryFVT.getTerms(cat1.getSystemAttributes().getGUID()).size() != 1) {
             throw new GlossaryAuthorFVTCheckedException("ERROR: Expected the category to have 1 term.");
         }
@@ -453,13 +473,13 @@ public class TermFVT {
         deleteTerm(createdTerm4cats2.getSystemAttributes().getGUID());
     }
 
-    public  Term createTerm(String termName, String glossaryGuid) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+    public  Term createTerm(String termName, String glossaryGuid) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
         Term term = getTermForInput(termName, glossaryGuid);
         return issueCreateTerm(term);
     }
 
-    public Term issueCreateTerm(Term term) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
-        Term newTerm = subjectAreaTerm.create(this.userId, term);
+    public Term issueCreateTerm(Term term) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
+        Term newTerm = glossaryAuthorViewTermClient.create(this.userId, term);
         if (newTerm != null)
         {
             String guid = newTerm.getSystemAttributes().getGUID();
@@ -478,7 +498,7 @@ public class TermFVT {
         return term;
     }
 
-    public  Term createTermWithGovernanceClassifications(String termName, String glossaryGuid, GovernanceClassifications governanceClassifications) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+    public  Term createTermWithGovernanceClassifications(String termName, String glossaryGuid, GovernanceClassifications governanceClassifications) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
         Term term = getTermForInput(termName, glossaryGuid);
         term.setGovernanceClassifications(governanceClassifications);
         Term newTerm = issueCreateTerm(term);
@@ -523,39 +543,39 @@ public class TermFVT {
     }
 
 
-    public Term getTermByGUID(String guid) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
-        Term term = subjectAreaTerm.getByGUID(this.userId, guid);
+    public Term getTermByGUID(String guid) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
+        Term term = glossaryAuthorViewTermClient.getByGUID(this.userId, guid);
         if (term != null)
         {
             System.out.println("Got Term " + term.getName() + " with userId " + term.getSystemAttributes().getGUID() + " and status " + term.getSystemAttributes().getStatus());
         }
         return term;
     }
-    public List<Term> findTerms(String criteria) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+    public List<Term> findTerms(String criteria) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
         FindRequest findRequest = new FindRequest();
         findRequest.setSearchCriteria(criteria);
-        List<Term> terms = subjectAreaTerm.find(this.userId, findRequest);
+        List<Term> terms = glossaryAuthorViewTermClient.find(this.userId, findRequest,false,true);
         return terms;
     }
 
-    public Term updateTerm(String guid, Term term) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
-        Term updatedTerm = subjectAreaTerm.update(this.userId, guid, term);
+    public Term updateTerm(String guid, Term term) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
+        Term updatedTerm = glossaryAuthorViewTermClient.update(this.userId, guid, term,true);
         if (updatedTerm != null)
         {
             System.out.println("Updated Term name to " + updatedTerm.getName());
         }
         return updatedTerm;
     }
-    public Term replaceTerm(String guid, Term term) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
-        Term updatedTerm = subjectAreaTerm.replace(this.userId, guid, term);
+    public Term replaceTerm(String guid, Term term) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
+        Term updatedTerm = glossaryAuthorViewTermClient.update(this.userId, guid, term, true);
         if (updatedTerm != null)
         {
             System.out.println("Replaced Term name to " + updatedTerm.getName());
         }
         return updatedTerm;
     }
-    public Term restoreTerm(String guid) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
-        Term restoredTerm = subjectAreaTerm.restore(this.userId, guid);
+    public Term restoreTerm(String guid) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
+        Term restoredTerm = glossaryAuthorViewTermClient.restore(this.userId, guid);
         if (restoredTerm != null)
         {
             System.out.println("Restored Term " + restoredTerm.getName());
@@ -563,13 +583,13 @@ public class TermFVT {
         }
         return restoredTerm;
     }
-    public Term updateTermToFuture(String guid, Term term) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+    public Term updateTermToFuture(String guid, Term term) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
         long now = new Date().getTime();
 
        term.setEffectiveFromTime(new Date(now+6*1000*60*60*24).getTime());
        term.setEffectiveToTime(new Date(now+7*1000*60*60*24).getTime());
 
-        Term updatedTerm = subjectAreaTerm.update(this.userId, guid, term);
+        Term updatedTerm = glossaryAuthorViewTermClient.update(this.userId, guid, term,true);
         if (updatedTerm != null)
         {
             System.out.println("Updated Term name to " + updatedTerm.getName());
@@ -577,30 +597,31 @@ public class TermFVT {
         return updatedTerm;
     }
 
-    public void deleteTerm(String guid) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
-            subjectAreaTerm.delete(this.userId, guid);
+    public void deleteTerm(String guid) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
+            glossaryAuthorViewTermClient.delete(this.userId, guid);
             createdTermsSet.remove(guid);
             System.out.println("Delete succeeded");
     }
 
-    public List<Relationship> getTermRelationships(Term term) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
-        return subjectAreaTerm.getAllRelationships(this.userId, term.getSystemAttributes().getGUID());
+    public List<Relationship> getTermRelationships(Term term) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
+        return glossaryAuthorViewTermClient.getAllRelationships(this.userId, term.getSystemAttributes().getGUID());
     }
 
-    public List<Relationship> getTermRelationships(Term term, Date asOfTime, int offset, int pageSize, SequencingOrder sequenceOrder, String sequenceProperty) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+    public List<Relationship> getTermRelationships(Term term, Date asOfTime, int offset, int pageSize, SequencingOrder sequenceOrder, String sequenceProperty) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
         FindRequest findRequest = new FindRequest();
         findRequest.setAsOfTime(asOfTime);
         findRequest.setStartingFrom(offset);
         findRequest.setPageSize(pageSize);
         findRequest.setSequencingOrder(sequenceOrder);
         findRequest.setSequencingProperty(sequenceProperty);
-        return subjectAreaTerm.getRelationships(this.userId, term.getSystemAttributes().getGUID(),findRequest);
+        //term.
+        return glossaryAuthorViewTermClient.getRelationships(this.userId, term.getSystemAttributes().getGUID(),findRequest);
     }
-    void deleteRemaining() throws UserNotAuthorizedException, PropertyServerException, InvalidParameterException, GlossaryAuthorFVTCheckedException {
+    void deleteRemaining() throws UserNotAuthorizedException, PropertyServerException, InvalidParameterException, GlossaryAuthorFVTCheckedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
         deleteRemainingTerms();
         glossaryFVT.deleteRemainingGlossaries();
     }
-    void deleteRemainingTerms() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, GlossaryAuthorFVTCheckedException {
+    void deleteRemainingTerms() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, GlossaryAuthorFVTCheckedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
         Iterator<String> iter =  createdTermsSet.iterator();
         while (iter.hasNext()) {
             String guid = iter.next();
@@ -619,7 +640,7 @@ public class TermFVT {
         return glossaryAuthorViewTermClient.getCategories(userId, termGuid, findRequest);
     }
 
-    private void testCategorizedTermsWithSearchCriteria() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, GlossaryAuthorFVTCheckedException {
+    private void testCategorizedTermsWithSearchCriteria() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, GlossaryAuthorFVTCheckedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
         System.out.println("Create a glossary");
         Glossary glossary = glossaryFVT.createGlossary("Glossary name for CategorizedTermsWithSearchCriteria");
         String glossaryGuid = glossary.getSystemAttributes().getGUID();

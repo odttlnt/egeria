@@ -2,16 +2,19 @@
 
 package org.odpi.openmetadata.accessservices.glossaryauthor.fvt.client;
 
-import org.odpi.openmetadata.accessservices.subjectarea.client.SubjectAreaRestClient;
+//import org.odpi.openmetadata.accessservices.subjectarea.client.SubjectAreaRestClient;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.category.Category;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.common.FindRequest;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.glossary.Glossary;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.graph.Node;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.graph.Relationship;
+import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.term.Term;
 import org.odpi.openmetadata.accessservices.subjectarea.responses.SubjectAreaOMASAPIResponse;
 import org.odpi.openmetadata.accessservices.subjectarea.utils.QueryBuilder;
+import org.odpi.openmetadata.accessservices.subjectarea.utils.QueryParams;
 import org.odpi.openmetadata.accessservices.subjectarea.utils.QueryUtils;
 import org.odpi.openmetadata.adminservices.rest.OMAGServerConfigResponse;
+import org.odpi.openmetadata.adminservices.rest.ViewServiceConfigResponse;
 import org.odpi.openmetadata.adminservices.rest.ViewServicesResponse;
 import org.odpi.openmetadata.commonservices.ffdc.InvalidParameterHandler;
 import org.odpi.openmetadata.commonservices.ffdc.rest.FFDCRESTClient;
@@ -76,8 +79,8 @@ public class GlossaryAuthorViewRestClient extends FFDCRESTClient {
         String expandedURL;
 /////servers/{serverName}/open-metadata/view-services/glossary-author/users/{userId}/categories")
         expandedURL = String.format(serverPlatformURLRoot + urnTemplate, serverName, userId, guid);
-//        System.out.println(" expandedURL  " + expandedURL);
-        completeResponse = callGetRESTCall(methodName, type, expandedURL);
+        System.out.println(" expandedURL  " + expandedURL);
+        completeResponse = callGetRESTCall(methodName, type, expandedURL);//,null);
         exceptionHandler.detectAndThrowStandardExceptions(methodName, completeResponse);
 
         if (log.isDebugEnabled()) {
@@ -295,6 +298,44 @@ public class GlossaryAuthorViewRestClient extends FFDCRESTClient {
         }
         queryBuilder.addParam("exactValue", exactValue);
         queryBuilder.addParam("ignoreCase", ignoreCase);
+        return queryBuilder;
+    }
+
+    /**
+     * Method for constructing a query (https://en.wikipedia.org/wiki/Query_string) using the information described in the findRequest
+     * page size and startingFrom need to set by the caller.
+     *
+     * @param methodName  name of the method being called.
+     * @param findRequest {@link FindRequest}
+     *
+     * @return query
+     * @throws InvalidParameterException one of the parameters is null or invalid
+     * */
+    public QueryBuilder createFindQuery(String methodName, FindRequest findRequest, QueryParams queryParams) throws InvalidParameterException {
+        QueryBuilder queryBuilder = new QueryBuilder();
+        SequencingOrder sequencingOrder = findRequest.getSequencingOrder();
+        if (sequencingOrder == null) {
+            sequencingOrder = SequencingOrder.ANY;
+        }
+        String sequencingOrderName = QueryUtils.encodeParams(methodName, "sequencingOrder", sequencingOrder.name());
+        queryBuilder.addParam("sequencingOrder", sequencingOrderName);
+        Integer pageSize = findRequest.getPageSize();
+        if (pageSize != null) {
+            queryBuilder.addParam("pageSize", pageSize);
+        }
+        queryBuilder.addParam("startingFrom",  findRequest.getStartingFrom());
+
+        String searchCriteria = findRequest.getSearchCriteria();
+        if (searchCriteria != null) {
+            searchCriteria = QueryUtils.encodeParams(methodName, "searchCriteria", searchCriteria);
+            queryBuilder.addParam("searchCriteria", searchCriteria);
+        }
+        String property = findRequest.getSequencingProperty();
+        if (property != null) {
+            property = QueryUtils.encodeParams(methodName, "sequencingProperty", property);
+            queryBuilder.addParam("sequencingProperty", property);
+        }
+        queryBuilder.addParams(queryParams);
         return queryBuilder;
     }
 
@@ -578,6 +619,75 @@ public class GlossaryAuthorViewRestClient extends FFDCRESTClient {
         }
         return completeResponse;
     }
+    /**
+     * Issue a GET REST call that returns a response object by guid.
+     *
+     * @param <T> return type for results in {@link GenericResponse}
+     * @param userId      unique identifier for requesting user, under which the request is performed
+     * @param guid        unique identifier of the received object
+     * @param methodName  name of the method being called.
+     * @param type class of the response for generic object. Descried using {@link ParameterizedTypeReference}
+     *             An example can be seen here {@link ResponseParameterization#getParameterizedType()}
+     * @param urnTemplate  template of the URN for the REST API call with place-holders for the parameters.
+     * @param maximumPageSizeOnRestCall maximum page size that can be used on rest calls, null and 0 mean no limit set.
+     * @return GenericResponse with T result
+     * @throws PropertyServerException something went wrong with the REST call stack.
+     * @throws UserNotAuthorizedException the requesting user is not authorized to issue this request.
+     * @throws InvalidParameterException one of the parameters is null or invalid
+     */
+    public <T> GenericResponse<T> getByIdRESTCall(String userId,
+                                                  String guid,
+                                                  String methodName,
+                                                  ParameterizedTypeReference<GenericResponse<T>> type,
+                                                  String urnTemplate,
+                                                  FindRequest findRequest,
+                                                  Integer maximumPageSizeOnRestCall,
+                                                  QueryParams queryParams) throws InvalidParameterException,
+            PropertyServerException,
+            UserNotAuthorizedException
+    {
+        if (log.isDebugEnabled()) {
+            log.debug("==> Method: " + methodName + ",userId=" + userId + ",guid=" + guid);
+        }
+
+        GenericResponse<T> completeResponse = null;
+        int requestedPageSize = 0;
+        if (findRequest != null) {
+            if (findRequest.getPageSize() == null) {
+                findRequest.setPageSize(invalidParameterHandler.getMaxPagingSize());
+            }
+            invalidParameterHandler.validatePaging(findRequest.getStartingFrom(), findRequest.getPageSize(), methodName);
+            requestedPageSize = findRequest.getPageSize();
+        }
+
+        if (maximumPageSizeOnRestCall == null || maximumPageSizeOnRestCall < 1 || maximumPageSizeOnRestCall >= requestedPageSize ) {
+            // Only need to make one call
+            String expandedURL;
+            if (findRequest == null) {
+                expandedURL = String.format(serverPlatformURLRoot + urnTemplate, serverName, userId, guid);
+            } else {
+                QueryBuilder queryBuilder = createFindQuery(methodName, findRequest, queryParams);
+                String findUrlTemplate = urnTemplate + queryBuilder.toString();
+                expandedURL = String.format(serverPlatformURLRoot + findUrlTemplate, serverName, userId, guid);
+            }
+            completeResponse = callGetRESTCall(methodName, type, expandedURL);
+            exceptionHandler.detectAndThrowStandardExceptions(methodName, completeResponse);
+        } else {
+            // amend the urnTemplate to replace the guid - which will be the last %s, note there might be characters after this %s we need to keep.
+            int lastIndex = urnTemplate.lastIndexOf("%s");
+            String lastBit =urnTemplate.substring(lastIndex);
+            String lastBitWithGuid = lastBit.replace("%s",guid);
+            urnTemplate = urnTemplate.substring(0, lastIndex) + lastBitWithGuid;
+            completeResponse = getAccumulatedResponse(userId, methodName, urnTemplate, type, findRequest, maximumPageSizeOnRestCall, requestedPageSize);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("<== successful method : " + methodName + ",userId=" + userId);
+        }
+        return completeResponse;
+    }
+
+
+
 
     public OMAGServerConfigResponse getConfigRESTCall(String userId, String guid, String methodName, Class<OMAGServerConfigResponse> type, String urnTemplate)
             throws InvalidParameterException,
@@ -591,7 +701,31 @@ public class GlossaryAuthorViewRestClient extends FFDCRESTClient {
         String expandedURL;
 /////servers/{serverName}/open-metadata/view-services/glossary-author/users/{userId}/categories")
         expandedURL = String.format(serverPlatformURLRoot + urnTemplate, userId, serverName);//, guid);
-//        System.out.println(" expandedURL  " + expandedURL);
+        System.out.println(" expandedURL  " + expandedURL);
+        completeResponse = callGetRESTCall(methodName, type, expandedURL);
+        exceptionHandler.detectAndThrowStandardExceptions(methodName, completeResponse);
+
+        if (log.isDebugEnabled()) {
+            log.debug("<== successful method : " + methodName + ",userId=" + userId);
+        }
+
+        return completeResponse;
+
+    }
+
+    public ViewServiceConfigResponse getViewServiceConfigRESTCall(String userId, String guid, String methodName, Class<ViewServiceConfigResponse> type, String urnTemplate)
+            throws InvalidParameterException,
+            PropertyServerException,
+            UserNotAuthorizedException {
+        if (log.isDebugEnabled()) {
+            log.debug("==> Method: " + methodName + ",userId=" + userId + ",guid=" + guid);
+        }
+
+        ViewServiceConfigResponse completeResponse = null;
+        String expandedURL;
+/////servers/{serverName}/open-metadata/view-services/glossary-author/users/{userId}/categories")
+        expandedURL = String.format(serverPlatformURLRoot + urnTemplate, userId, serverName);//, guid);
+        System.out.println(" expandedURL  " + expandedURL);
         completeResponse = callGetRESTCall(methodName, type, expandedURL);
         exceptionHandler.detectAndThrowStandardExceptions(methodName, completeResponse);
 
@@ -612,9 +746,9 @@ public class GlossaryAuthorViewRestClient extends FFDCRESTClient {
 
         ViewServicesResponse completeResponse = null;
         String expandedURL;
-/////servers/{serverName}/open-metadata/view-services/glossary-author/users/{userId}/categories")
+
         expandedURL = String.format(serverPlatformURLRoot + urnTemplate, userId, serverName);//, guid);
-//        System.out.println(" expandedURL  " + expandedURL);
+        System.out.println(" expandedURL  " + expandedURL);
         completeResponse = callGetRESTCall(methodName, type, expandedURL);
         exceptionHandler.detectAndThrowStandardExceptions(methodName, completeResponse);
 
@@ -625,4 +759,31 @@ public class GlossaryAuthorViewRestClient extends FFDCRESTClient {
         return completeResponse;
 
     }
+
+    public <T> GenericResponse<T> putRESTCall(String userId,
+                                             String guid,
+                                             String methodName,
+                                             String urnTemplate,
+                                             ParameterizedTypeReference<GenericResponse<T>> parameterizedType,
+                                             Term term,
+                                             Object... params)
+            throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException {
+
+        if (log.isDebugEnabled()) {
+            log.debug("==> Method: " + methodName + ",userId=" + userId);
+        }
+
+        //String guid = glossary.getSystemAttributes().getGUID();
+        //String urlString = String.format(BASE_URL + "/%s",guid);
+        String expandedURL = String.format(serverPlatformURLRoot + urnTemplate + "/%s", serverName, userId, guid);
+
+        if (log.isDebugEnabled()) {
+            log.debug("<== Glossary successful method : " + methodName + ",userId=" + userId);
+        }
+
+        return callPutRESTCall(methodName,
+                parameterizedType,
+                expandedURL,
+                term,
+                params);}
 }

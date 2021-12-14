@@ -8,9 +8,11 @@ import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.commo
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.graph.Relationship;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.term.Term;
 import org.odpi.openmetadata.accessservices.subjectarea.responses.SubjectAreaOMASAPIResponse;
+import org.odpi.openmetadata.accessservices.subjectarea.utils.QueryBuilder;
 import org.odpi.openmetadata.adminservices.configuration.properties.OMAGServerConfig;
 import org.odpi.openmetadata.adminservices.configuration.properties.ViewServiceConfig;
 import org.odpi.openmetadata.adminservices.rest.OMAGServerConfigResponse;
+import org.odpi.openmetadata.adminservices.rest.ViewServiceConfigResponse;
 import org.odpi.openmetadata.adminservices.rest.ViewServicesResponse;
 import org.odpi.openmetadata.commonservices.ffdc.rest.GenericResponse;
 import org.odpi.openmetadata.commonservices.ffdc.rest.ResponseParameterization;
@@ -27,14 +29,18 @@ import java.util.Map;
 import static org.odpi.openmetadata.accessservices.glossaryauthor.fvt.FVTConstants.*;
 
 
-public class GlossaryAuthorViewTermClient implements GlossaryAuthorViewTerm, ResponseParameterization<Category> {
+public class GlossaryAuthorViewTermClient implements GlossaryAuthorViewTerm, ResponseParameterization<Term> {
 
     protected final GlossaryAuthorViewRestClient client;
     private static final String BASE_URL = GLOSSARY_AUTHOR_BASE_URL + "terms";
     ///servers/{viewServerName}/open-metadata/view-services/dino/users/{userId}/server/{serverName}/instance/configuration
 //    "/servers/{viewServerName}/open-metadata/view-services/dino/users/{userId}/server/{serverName}/configuration
 
-    private static final String GLOSSARY_AUTHOR_CONFIG_BASE_URL = ADMIN_BASE_URL + "instance/configuration";
+    //private static final String GLOSSARY_AUTHOR_CONFIG_BASE_URL = ADMIN_BASE_URL + "instance/configuration";
+    private static final String GLOSSARY_AUTHOR_CONFIG_BASE_URL = ADMIN_BASE_URL + "configuration";
+    private static final String GLOSSARY_AUTHOR_C_BASE_URL = ADMIN_BASE_URL + "view-services/glossary-author";
+    //https://localhost:10454/open-metadata/admin-services/users/garygeeke/servers/serverview/view-services/glossary-author
+
 
     private static final String GLOSSARY_AUTHOR_VIEWCONFIG_BASE_URL = ADMIN_BASE_URL + "view-services/configuration";
 
@@ -48,14 +54,14 @@ public class GlossaryAuthorViewTermClient implements GlossaryAuthorViewTerm, Res
 
 
     @Override
-    public Category create(String userId, Category category) throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException {
-        GenericResponse<Category> response = client.postRESTCall(userId, getMethodInfo("create"), BASE_URL, getParameterizedType(), category);
+    public Term create(String userId, Term term) throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException {
+        GenericResponse<Term> response = client.postRESTCall(userId, getMethodInfo("create"), BASE_URL, getParameterizedType(), term);
 
         return response.head().get();
     }
 
     @Override
-    public Category update(String userId, String guid, Category category, boolean isReplace) throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException {
+    public Term update(String userId, String guid, Term term, boolean isReplace) throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException {
         Map<String, String> params = new HashMap<>();
       //  boolean isReplace
         if (isReplace)
@@ -64,13 +70,15 @@ public class GlossaryAuthorViewTermClient implements GlossaryAuthorViewTerm, Res
             params.put("isReplace", "false");
 
 ///servers/{serverName}/open-metadata/view-services/glossary-author/users/{userId}/categories")
-        GenericResponse<Category> response = client.putRESTCall(userId,
+        GenericResponse<Term> response = client.putRESTCall(userId,
                 guid,
                 getMethodInfo("create"),
                 BASE_URL,
                 getParameterizedType(),
-                category,
+                term,
                 params);
+
+
         return response.head().get();
     }
 
@@ -91,14 +99,14 @@ public class GlossaryAuthorViewTermClient implements GlossaryAuthorViewTerm, Res
     }
 
     @Override
-    public Category restore(String userId, String guid) throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException {
+    public Term restore(String userId, String guid) throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException {
         String methodName = getMethodInfo("Restore");
-        ResolvableType resolvableType = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, Category.class);
-        ParameterizedTypeReference<GenericResponse<Category>> type = ParameterizedTypeReference.forType(resolvableType.getType());
+        ResolvableType resolvableType = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, Term.class);
+        ParameterizedTypeReference<GenericResponse<Term>> type = ParameterizedTypeReference.forType(resolvableType.getType());
 
         String urlTemplate = BASE_URL + "/%s";
 
-        GenericResponse<Category> response = client.postRESTCall( userId,
+        GenericResponse<Term> response = client.postRESTCall( userId,
                 methodName,
                 urlTemplate,
                 type,
@@ -141,26 +149,27 @@ public class GlossaryAuthorViewTermClient implements GlossaryAuthorViewTerm, Res
     }
 
     @Override
-    public List<Category> findAll(String userId) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+    public List<Term> findAll(String userId) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
         return find(userId, new FindRequest(), false, true);
     }
 
     @Override
-    public Category getByGUID(String userId, String guid) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
-        ResolvableType resolvableType = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, Category.class);
-        ParameterizedTypeReference<GenericResponse<Category>> type = ParameterizedTypeReference.forType(resolvableType.getType());
-        GenericResponse<Category> response =
+    public Term getByGUID(String userId, String guid) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+        ResolvableType resolvableType = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, Term.class);
+        ParameterizedTypeReference<GenericResponse<Term>> type = ParameterizedTypeReference.forType(resolvableType.getType());
+        GenericResponse<Term> response =
                 client.getByGUIdRESTCall(userId, guid, getMethodInfo("getByGUID"), type, BASE_URL);
         return response.head().get();
     }
 
+
     @Override
-    public List<Category> find(String userId, FindRequest findRequest, boolean exactValue, boolean ignoreCase) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+    public List<Term> find(String userId, FindRequest findRequest, boolean exactValue, boolean ignoreCase) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
 
-        ResolvableType resolvableType = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, Category.class);
-        ParameterizedTypeReference<GenericResponse<Category>> type = ParameterizedTypeReference.forType(resolvableType.getType());
+        ResolvableType resolvableType = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, Term.class);
+        ParameterizedTypeReference<GenericResponse<Term>> type = ParameterizedTypeReference.forType(resolvableType.getType());
 
-        GenericResponse<Category> completeResponse =
+        GenericResponse<Term> completeResponse =
         client.findRESTCall(userId,getMethodInfo("find"),BASE_URL,
                 type, findRequest, exactValue, ignoreCase, null);
 
@@ -168,8 +177,15 @@ public class GlossaryAuthorViewTermClient implements GlossaryAuthorViewTerm, Res
     }
 
     @Override
-    public List<Category> getCategories(String userId, String termGuid, FindRequest findRequest) {
-        return null;
+    public List<Category> getCategories(String userId, String termGuid, FindRequest findRequest) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+        final String urnTemplate = BASE_URL + "/%s/categories";
+        final String methodInfo = getMethodInfo(" getCategories");
+        QueryBuilder query = client.createFindQuery(methodInfo, findRequest);
+        String urlTemplate = urnTemplate + query.toString();
+        ResolvableType resolvableType = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, Category.class);
+        ParameterizedTypeReference<GenericResponse<Category>> type = ParameterizedTypeReference.forType(resolvableType.getType());
+        GenericResponse<Category> response = client.getByIdRESTCall(userId ,termGuid, methodInfo, type, urlTemplate);
+        return response.results();
     }
 
     @Override
@@ -189,7 +205,41 @@ public class GlossaryAuthorViewTermClient implements GlossaryAuthorViewTerm, Res
     }
 
     @Override
-    public List<ViewServiceConfig> getViewServiceConfig(String userId) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+    public ViewServiceConfig getGlossaryAuthViewServiceConfig(String userId) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+/*
+        ResolvableType resolvableType = ResolvableType.forClassWithGenerics(OMAGServerConfigResponse.class, OMAGServerConfig.class);
+        ParameterizedTypeReference<GenericResponse<OMAGServerConfig>> type = ParameterizedTypeReference.forType(resolvableType.getType());
+*/
+
+        ViewServiceConfigResponse completeResponse =
+                client.getViewServiceConfigRESTCall(userId,"current",getMethodInfo("getOmagServerName"),ViewServiceConfigResponse.class,GLOSSARY_AUTHOR_C_BASE_URL);
+        //findRequest, exactValue, ignoreCase, null);
+        System.out.println("GlossaryResponse ******");
+        System.out.println(completeResponse.toString());
+        System.out.println("****** GlossaryResponse");
+
+
+
+        return completeResponse.getConfig();
+    }
+
+    @Override
+    public List<Relationship> getRelationships(String userId, String guid, FindRequest findRequest) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+        ResolvableType resolvableType = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, Relationship.class);
+        ParameterizedTypeReference<GenericResponse<Relationship>> type = ParameterizedTypeReference.forType(resolvableType.getType());
+
+        String urlTemplate = BASE_URL + "/%s/relationships";
+
+        GenericResponse<Relationship> completeResponse =
+                client.getByIdRESTCall(userId,guid, getMethodInfo("find"),
+                        type, urlTemplate);
+
+        return completeResponse.results();
+    }
+
+
+    @Override
+    public List<ViewServiceConfig> getViewServiceConfigs(String userId) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
 /*
         ResolvableType resolvableType = ResolvableType.forClassWithGenerics(OMAGServerConfigResponse.class, OMAGServerConfig.class);
         ParameterizedTypeReference<GenericResponse<OMAGServerConfig>> type = ParameterizedTypeReference.forType(resolvableType.getType());
