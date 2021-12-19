@@ -62,22 +62,18 @@ public class GlossaryAuthorViewTermClient implements GlossaryAuthorViewTerm, Res
 
     @Override
     public Term update(String userId, String guid, Term term, boolean isReplace) throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException {
-        Map<String, String> params = new HashMap<>();
-      //  boolean isReplace
-        if (isReplace)
-            params.put("isReplace", "true");
-        else
-            params.put("isReplace", "false");
+        final String urlTemplate = BASE_URL + "/%s?isReplace=" + Boolean.toString(isReplace);
+        String methodInfo = getMethodInfo("update(isReplace=" + isReplace + ")");
+        //GenericResponse<Term> response = client.putRESTCall(userId, guid, methodInfo, urlTemplate, getParameterizedType(), supplied);
+        //return response.head().get();
 
-///servers/{serverName}/open-metadata/view-services/glossary-author/users/{userId}/categories")
+
         GenericResponse<Term> response = client.putRESTCall(userId,
-                guid,
-                getMethodInfo("create"),
-                BASE_URL,
-                getParameterizedType(),
-                term,
-                params);
-
+                                                            guid,
+                                                            methodInfo,
+                                                            urlTemplate,
+                                                            getParameterizedType(),
+                                                            term);
 
         return response.head().get();
     }
@@ -198,9 +194,9 @@ public class GlossaryAuthorViewTermClient implements GlossaryAuthorViewTerm, Res
         OMAGServerConfigResponse completeResponse =
                 client.getConfigRESTCall(userId,"current",getMethodInfo("getConfig"),OMAGServerConfigResponse.class,GLOSSARY_AUTHOR_CONFIG_BASE_URL);
         //findRequest, exactValue, ignoreCase, null);
-        System.out.println("completeresponse ******");
-        System.out.println(completeResponse.toString());
-        System.out.println("****** completeresponse");
+//        System.out.println("completeresponse ******");
+//        System.out.println(completeResponse.toString());
+//        System.out.println("****** completeresponse");
         return completeResponse.getOMAGServerConfig();
     }
 
@@ -214,12 +210,11 @@ public class GlossaryAuthorViewTermClient implements GlossaryAuthorViewTerm, Res
         ViewServiceConfigResponse completeResponse =
                 client.getViewServiceConfigRESTCall(userId,"current",getMethodInfo("getOmagServerName"),ViewServiceConfigResponse.class,GLOSSARY_AUTHOR_C_BASE_URL);
         //findRequest, exactValue, ignoreCase, null);
+/*
         System.out.println("GlossaryResponse ******");
         System.out.println(completeResponse.toString());
         System.out.println("****** GlossaryResponse");
-
-
-
+*/
         return completeResponse.getConfig();
     }
 

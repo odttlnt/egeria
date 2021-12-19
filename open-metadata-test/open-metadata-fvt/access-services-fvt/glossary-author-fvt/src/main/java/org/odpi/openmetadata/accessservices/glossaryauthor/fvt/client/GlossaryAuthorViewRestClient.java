@@ -409,7 +409,7 @@ public class GlossaryAuthorViewRestClient extends FFDCRESTClient {
 //            System.out.println("++++ expandedURL " + expandedURL);
             completeResponse = callGetRESTCall(methodName, type, expandedURL);
 //            System.out.println("++++ completeResponse " + completeResponse.toString());
-            log.error("<== Testing log : " + methodName + ",userId=" + userId);
+//            log.error("<== Testing log : " + methodName + ",userId=" + userId);
             exceptionHandler.detectAndThrowStandardExceptions(methodName, completeResponse);
         } else {
             completeResponse = getAccumulatedResponse(userId, methodName, urnTemplate, type, findRequest, maximumPageSizeOnRestCall, requestedPageSize);
@@ -452,7 +452,7 @@ public class GlossaryAuthorViewRestClient extends FFDCRESTClient {
 //            System.out.println("++++ expandedURL " + expandedURL);
             completeResponse = callGetRESTCall(methodName, type, expandedURL);
 //            System.out.println("++++ completeResponse " + completeResponse.toString());
-            log.error("<== Testing log : " + methodName + ",userId=" + userId);
+//            log.error("<== Testing log : " + methodName + ",userId=" + userId);
             exceptionHandler.detectAndThrowStandardExceptions(methodName, completeResponse);
         } else {
             completeResponse = getAccumulatedResponse(userId, methodName, urnTemplate, type, findRequest, maximumPageSizeOnRestCall, requestedPageSize);
@@ -775,7 +775,14 @@ public class GlossaryAuthorViewRestClient extends FFDCRESTClient {
 
         //String guid = glossary.getSystemAttributes().getGUID();
         //String urlString = String.format(BASE_URL + "/%s",guid);
-        String expandedURL = String.format(serverPlatformURLRoot + urnTemplate + "/%s", serverName, userId, guid);
+        String expandedURL = String.format(serverPlatformURLRoot + urnTemplate , serverName, userId, guid);
+/*        for (Object o:params){
+            System.out.println("Object value " + o.toString());
+        }
+        System.out.println("params term rest client " + params.toString());
+*/
+
+        System.out.println(expandedURL);
 
         if (log.isDebugEnabled()) {
             log.debug("<== Glossary successful method : " + methodName + ",userId=" + userId);

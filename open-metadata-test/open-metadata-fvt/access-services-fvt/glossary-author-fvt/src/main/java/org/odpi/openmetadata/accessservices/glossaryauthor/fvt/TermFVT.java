@@ -86,7 +86,7 @@ public class TermFVT {
         retrieveOmagServerName();
         omagServer = retrieveOmagServerName("Glossary Author");
 
-        System.out.println("*****   *** " + omagServer + "*****   *** " );
+        System.out.println("OMAGSERVER " + omagServer );
 
         subjectAreaFVT = new SubjectAreaDefinitionCategoryFVT(url, serverName,omagServer,userId);
 
@@ -96,8 +96,8 @@ public class TermFVT {
 
     private String retrieveOmagConfig() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
         OMAGServerConfig config = glossaryAuthorViewTermClient.getConfig(userId);
-        System.out.println(config.toString());
-        System.out.println(config.getViewServicesConfig().toString());
+//        System.out.println(config.toString());
+//        System.out.println(config.getViewServicesConfig().toString());
         return config.getLocalServerName();
     }
     private ViewServiceConfig retrieveGlossaryAuthorConfig() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
@@ -107,21 +107,21 @@ public class TermFVT {
 
     private String retrieveOmagServerName() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
         ViewServiceConfig config = retrieveGlossaryAuthorConfig();
-        System.out.println(config.toString());
-        System.out.println(config.getOMAGServerName());//getViewServicesConfig().toString());
+//        System.out.println(config.toString());
+//        System.out.println(config.getOMAGServerName());//getViewServicesConfig().toString());
         return config.getOMAGServerName();
     }
 
     private String retrieveOmagServerName(String viewServiceName) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
         List<ViewServiceConfig> viewServiceConfigs = glossaryAuthorViewTermClient.getViewServiceConfigs(userId);
         Map<String,Object> viewServiceOptions;
-        System.out.println("  viewServiceConfigs  " + viewServiceConfigs.toString());
+//        System.out.println("  viewServiceConfigs  " + viewServiceConfigs.toString());
 
         for (ViewServiceConfig vsc: viewServiceConfigs){
-            System.out.println(vsc.getViewServiceName());
+//            System.out.println(vsc.getViewServiceName());
             if (vsc.getViewServiceName().equals(viewServiceName)) {
-                    System.out.println("$$$$$$$$$$$$  FOUND GLOSSARY AUTHOR $$$$$$$$$$$");
-                    System.out.println(String.valueOf(vsc.getOMAGServerPlatformRootURL()));
+//                    System.out.println("$$$$$$$$$$$$  FOUND GLOSSARY AUTHOR $$$$$$$$$$$");
+                    System.out.println("OMAG Server URL " + String.valueOf(vsc.getOMAGServerPlatformRootURL()));
                     return  String.valueOf(vsc.getOMAGServerName());
                 }
             }
@@ -437,6 +437,7 @@ public class TermFVT {
         // replace categories with null
         createdTerm4cats.setCategories(null);
         Term replacedTerm4cats = replaceTerm(createdTerm4cats.getSystemAttributes().getGUID(), createdTerm4cats);
+//        System.out.println("DDebug msg " + replacedTerm4cats.getCategories().toString());
         if (replacedTerm4cats.getCategories() != null) {
             throw new GlossaryAuthorFVTCheckedException("ERROR: Expected replace with null to get rid of the categorizations.");
         }
@@ -559,7 +560,7 @@ public class TermFVT {
     }
 
     public Term updateTerm(String guid, Term term) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
-        Term updatedTerm = glossaryAuthorViewTermClient.update(this.userId, guid, term,true);
+        Term updatedTerm = glossaryAuthorViewTermClient.update(this.userId, guid, term,false);
         if (updatedTerm != null)
         {
             System.out.println("Updated Term name to " + updatedTerm.getName());
