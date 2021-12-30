@@ -226,8 +226,9 @@ public class GlossaryAuthorViewTermClient implements GlossaryAuthorViewTerm, Res
         String urlTemplate = BASE_URL + "/%s/relationships";
 
         GenericResponse<Relationship> completeResponse =
-                client.getByIdRESTCall(userId,guid, getMethodInfo("find"),
-                        type, urlTemplate);
+                /*client.getByIdRESTCall(userId,guid, getMethodInfo("find"),
+                        type, urlTemplate);*/
+                client.findRESTCallById(userId, getMethodInfo("findRelationships"), urlTemplate, type, findRequest, false, true, 0, guid);
 
         return completeResponse.results();
     }
@@ -248,8 +249,9 @@ public class GlossaryAuthorViewTermClient implements GlossaryAuthorViewTerm, Res
     }
 
     @Override
-    public List<Relationship> getAllRelationships(String userId, String guid) {
-        return null;
+    public List<Relationship> getAllRelationships(String userId, String guid) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+//        relationships
+        return getRelationships( userId, guid, new FindRequest());
     }
 
     @Override

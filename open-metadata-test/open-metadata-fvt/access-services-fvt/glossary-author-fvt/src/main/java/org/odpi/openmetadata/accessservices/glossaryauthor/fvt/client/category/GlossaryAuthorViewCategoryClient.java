@@ -163,10 +163,38 @@ public class GlossaryAuthorViewCategoryClient implements GlossaryAuthorViewCateg
         return completeResponse.results();
     }
 
+    @Override
+    public List<Relationship> getRelationships(String userId, String guid, FindRequest findRequest) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+        ResolvableType resolvableType = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, Relationship.class);
+        ParameterizedTypeReference<GenericResponse<Relationship>> type = ParameterizedTypeReference.forType(resolvableType.getType());
+
+        String urlTemplate = BASE_URL + "/%s/relationships";
+/*
+        FindRequest findRequest =new FindRequest();
+        findRequest.setSearchCriteria("");
+        findRequest.setPageSize(5);
+*/
+
+        GenericResponse<Relationship> completeResponse =
+//                client.getByIdRESTCall(userId,guid, getMethodInfo("find"),
+//                        type, urlTemplate);
+        client.getByIdRESTCall(userId,
+                 guid,
+                "getCategoryRelationships",
+                type,
+                urlTemplate,
+                new FindRequest(),
+                0,
+                (QueryParams) null);
+/*                (userId,getMethodInfo("getCategoryRelationships"),urlTemplate,
+                type, findRequest, false, true, null);*/
+
+        return completeResponse.results();
+    }
 
     @Override
-    public List<Relationship> getAllRelationships(String userId, String guid) {
-        return null;
+    public List<Relationship> getAllRelationships(String userId, String guid) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+        return getRelationships(userId, guid, new FindRequest()) ;
     }
 
     @Override

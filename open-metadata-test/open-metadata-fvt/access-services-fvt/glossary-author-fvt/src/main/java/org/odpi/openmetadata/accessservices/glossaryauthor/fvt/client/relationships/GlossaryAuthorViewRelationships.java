@@ -1,82 +1,85 @@
 /* Copyright Contributors to the ODPi Egeria project. */
 
-package org.odpi.openmetadata.accessservices.glossaryauthor.fvt.client.category;
+package org.odpi.openmetadata.accessservices.glossaryauthor.fvt.client.relationships;
 
+import org.odpi.openmetadata.accessservices.subjectarea.client.SubjectAreaClient;
+import org.odpi.openmetadata.accessservices.subjectarea.client.SubjectAreaRelationshipClient;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.category.Category;
-import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.common.Config;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.common.FindRequest;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.graph.Relationship;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.term.Term;
+import org.odpi.openmetadata.accessservices.subjectarea.properties.relationships.Categorization;
+import org.odpi.openmetadata.accessservices.subjectarea.properties.relationships.IsATypeOf;
+import org.odpi.openmetadata.accessservices.subjectarea.properties.relationships.IsATypeOfDeprecated;
+import org.odpi.openmetadata.adminservices.configuration.properties.OMAGServerConfig;
+import org.odpi.openmetadata.adminservices.configuration.properties.ViewServiceConfig;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.InvalidParameterException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException;
-//import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.category;
 
-import java.util.*;
+import java.util.List;
 
+public interface GlossaryAuthorViewRelationships {
 
-import java.util.Map;
-
-public interface GlossaryAuthorViewCategory {
 
     /**
-     * Create a Category.
+     * Create a Relationship.
      * <p>
-     * The result is the Category object
+     * The result is the Relationship object
      *
      * @param userId       userId under which the request is performed
-     * @param category     Glossary object to be created
+     * @param relationship     Relationship object to be created
      *
-     * @return The Category
+     * @return The Relationship
      *
      * @throws PropertyServerException something went wrong with the REST call stack.
      * @throws UserNotAuthorizedException the requesting user is not authorized to issue this request.
      * @throws InvalidParameterException one of the parameters is null or invalid
      */
-    Category create(String userId, Category category) throws PropertyServerException, UserNotAuthorizedException, InvalidParameterException;
+    Relationship create(String userId, Relationship relationship) throws PropertyServerException, UserNotAuthorizedException, InvalidParameterException;
 
 
     /**
-     * Get a Category.
+     * Get a Relationship.
      * <p>
-     * The result is the requested Category object
+     * The result is the requested Relationship object
      *
      * @param userId       userId under which the request is performed
-     * @param guid         guid of Category object to be retrieved
+     * @param guid         guid of Relationship object to be retrieved
      *
-     * @return The requested Category
+     * @return The requested Relationship
      *
      * @throws PropertyServerException something went wrong with the REST call stack.
      * @throws UserNotAuthorizedException the requesting user is not authorized to issue this request.
      * @throws InvalidParameterException one of the parameters is null or invalid
      */
-    Category getByGUID(String userId, String guid) throws PropertyServerException,UserNotAuthorizedException, InvalidParameterException ;
+    Relationship getByGUID(String userId, String guid) throws PropertyServerException,UserNotAuthorizedException, InvalidParameterException ;
 
     /**
-     * Update a Category.
+     * Update a Relationship.
      * <p>
      * The result is the updated Glossary object
      *
      * @param userId       userId under which the request is performed
      * @param guid         guid of Glossary object to be updated
-     * @param category     Glossary object with updated values
+     * @param relationship     Glossary object with updated values
      * @param isReplace    If the object is to be replaced
      *
-     * @return The updated Category
+     * @return The updated Relationship
      *
      * @throws PropertyServerException something went wrong with the REST call stack.
      * @throws UserNotAuthorizedException the requesting user is not authorized to issue this request.
      * @throws InvalidParameterException one of the parameters is null or invalid
      */
-    Category update(String userId, String guid, Category category, boolean isReplace) throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException;
+    Relationship update(String userId, String guid, Relationship relationship, boolean isReplace) throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException;
 
     /**
-     * Delete a Category.
+     * Delete a Relationship.
      * <p>
      * The result Void object
      *
      * @param userId       userId under which the request is performed
-     * @param guid         guid of Category object to be retrieved
+     * @param guid         guid of Relationship object to be retrieved
      *
      *
      * @throws PropertyServerException something went wrong with the REST call stack.
@@ -84,47 +87,30 @@ public interface GlossaryAuthorViewCategory {
     void delete(String userId, String guid) throws PropertyServerException;
 
     /**
-     * Restore a soft-deleted Category.
+     * Restore a soft-deleted Relationship.
      * <p>
-     * The result is the restored Category object
+     * The result is the restored Relationship object
      *
      * @param userId       userId under which the request is performed
-     * @param guid         guid of Category object to be restored
+     * @param guid         guid of Relationship object to be restored
      *
-     * @return The restored Category
+     * @return The restored Relationship
      *
      * @throws PropertyServerException something went wrong with the REST call stack.
      * @throws UserNotAuthorizedException the requesting user is not authorized to issue this request.
      * @throws InvalidParameterException one of the parameters is null or invalid
      */
-    Category restore(String userId, String guid) throws PropertyServerException, UserNotAuthorizedException,InvalidParameterException  ;
+    Relationship restore(String userId, String guid) throws PropertyServerException, UserNotAuthorizedException,InvalidParameterException  ;
 
     /**
-     * Get a Category's relationships
+     * Get a Relationship's relationships
      * <p>
      * The result is a list of Relationships
      *
      * @param userId       userId under which the request is performed
-     * @param guid         guid of Category object to be retrieved
-     * @param findRequest information object for find calls. This include pageSize to limit the number of elements returned.
+     * @param guid         guid of Relationship object to be retrieved
      *
-     * @return The list of Category relationships
-     *
-     * @throws PropertyServerException something went wrong with the REST call stack.
-     * @throws UserNotAuthorizedException the requesting user is not authorized to issue this request.
-     * @throws InvalidParameterException one of the parameters is null or invalid
-     */
-    public List<Relationship> getRelationships(String userId, String guid, FindRequest findRequest) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException;
-
-    /**
-     * Get a Category's relationships
-     * <p>
-     * The result is a list of Relationships
-     *
-     * @param userId       userId under which the request is performed
-     * @param guid         guid of Category object to be retrieved
-     *
-     * @return The list of Category relationships
+     * @return The list of Relationship relationships
      *
      * @throws PropertyServerException something went wrong with the REST call stack.
      * @throws UserNotAuthorizedException the requesting user is not authorized to issue this request.
@@ -133,19 +119,19 @@ public interface GlossaryAuthorViewCategory {
     List<Relationship> getAllRelationships(String userId, String guid) throws PropertyServerException, UserNotAuthorizedException, InvalidParameterException ;
 
     /**
-     * Extract terms within a Category
+     * Extract relationships within a Category
      *
      * @param userId calling user
      * @param categoryGuid Category GUID
      * @param findRequest information object for find calls. This include pageSize to limit the number of elements returned.
      *
-     * @return list of  terms
+     * @return list of  relationships
      *
      * @throws PropertyServerException something went wrong with the REST call stack.
      * @throws UserNotAuthorizedException the requesting user is not authorized to issue this request.
      * @throws InvalidParameterException one of the parameters is null or invalid
      */
-    List<Term> getTerms(String userId, String categoryGuid, FindRequest findRequest) throws PropertyServerException,UserNotAuthorizedException, InvalidParameterException ;
+    List<Relationship> getRelationships(String userId, String categoryGuid, FindRequest findRequest) throws PropertyServerException,UserNotAuthorizedException, InvalidParameterException ;
 
     /**
      * Extract children within a Category
@@ -191,9 +177,9 @@ public interface GlossaryAuthorViewCategory {
      * @throws UserNotAuthorizedException the requesting user is not authorized to issue this request.
      * @throws InvalidParameterException one of the parameters is null or invalid
      */
-    List<Category> findAll(String userId) throws PropertyServerException, UserNotAuthorizedException, InvalidParameterException;
+    List<Relationship> findAll(String userId) throws PropertyServerException, UserNotAuthorizedException, InvalidParameterException;
     /**
-     * Extract children within a Category
+     * Extract children within a Relationship
      *
      * @param userId calling user
      * @param findRequest information object for find calls. This include pageSize to limit the number of elements returned.
@@ -206,7 +192,58 @@ public interface GlossaryAuthorViewCategory {
      * @throws UserNotAuthorizedException the requesting user is not authorized to issue this request.
      * @throws InvalidParameterException one of the parameters is null or invalid
      */
-    List<Category> find(String userId, FindRequest findRequest, boolean exactValue, boolean ignoreCase) throws PropertyServerException, UserNotAuthorizedException, InvalidParameterException;
+    List<Relationship> find(String userId, FindRequest findRequest, boolean exactValue, boolean ignoreCase) throws PropertyServerException, UserNotAuthorizedException, InvalidParameterException;
+
+    List<Category> getCategories(String userId, String relationshipGuid, FindRequest findRequest) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException;
+
+    /**
+     * Get config for server
+     *
+     * @param userId calling user
+     *
+     * @return Config for view server
+     *
+     * @throws PropertyServerException something went wrong with the REST call stack.
+     * @throws UserNotAuthorizedException the requesting user is not authorized to issue this request.
+     * @throws InvalidParameterException one of the parameters is null or invalid
+     */
+    OMAGServerConfig getConfig(String userId) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException;
+
+    /**
+     * Get list of view service config on the server
+     *
+     * @param userId calling user
+     *
+     * @return Config for view server
+     *
+     * @throws PropertyServerException something went wrong with the REST call stack.
+     * @throws UserNotAuthorizedException the requesting user is not authorized to issue this request.
+     * @throws InvalidParameterException one of the parameters is null or invalid
+     */
+    List<ViewServiceConfig> getViewServiceConfigs(String userId) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException;
+
+    /**
+     * Get service config for a particular view Service
+     *
+     * @param userId calling user
+     *
+     * @return Config for view server
+     *
+     * @throws PropertyServerException something went wrong with the REST call stack.
+     * @throws UserNotAuthorizedException the requesting user is not authorized to issue this request.
+     * @throws InvalidParameterException one of the parameters is null or invalid
+     */
+    ViewServiceConfig getGlossaryAuthViewServiceConfig(String userId) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException;
+
+    Categorization termCategorization();
+
+//    List<Relationship> getRelationships(String userId, String guid, FindRequest findRequest) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException;
+
+/*    *//**
+     * @return {@link GlossaryAuthorViewRelationshipsClient} for client calls(described in {@link GlossaryAuthorViewRelationshipsClient})
+     * when working with IsATypeOf objects
+     *//*
+    GlossaryAuthorViewRelationshipsClient<IsATypeOf> isATypeOf();*/
 
 }
 

@@ -9,6 +9,7 @@ import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.gloss
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.graph.Node;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.graph.Relationship;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.term.Term;
+import org.odpi.openmetadata.accessservices.subjectarea.properties.relationships.Synonym;
 import org.odpi.openmetadata.accessservices.subjectarea.responses.SubjectAreaOMASAPIResponse;
 import org.odpi.openmetadata.accessservices.subjectarea.utils.QueryBuilder;
 import org.odpi.openmetadata.accessservices.subjectarea.utils.QueryParams;
@@ -402,11 +403,11 @@ public class GlossaryAuthorViewRestClient extends FFDCRESTClient {
         int requestedPageSize = findRequest.getPageSize();
         if (maximumPageSizeOnRestCall == null || maximumPageSizeOnRestCall < 1 || maximumPageSizeOnRestCall >= requestedPageSize) {
             // Only need to make one call
-//            System.out.println("serverPlatformURLRoot + urnTemplate " + serverPlatformURLRoot + urnTemplate);
+            System.out.println("serverPlatformURLRoot + urnTemplate " + serverPlatformURLRoot + urnTemplate);
             String findUrlTemplate = String.format(serverPlatformURLRoot + urnTemplate, serverName, userId);
             // the searchCriteria could contain utf-8 characters that could include % characters, that format would incorrectly interpret. So we add the query params after the format
             String expandedURL = findUrlTemplate + createFindQuery(methodName, findRequest, exactValue, ignoreCase).toString();
-//            System.out.println("++++ expandedURL " + expandedURL);
+            System.out.println("++++ expandedURL " + expandedURL);
             completeResponse = callGetRESTCall(methodName, type, expandedURL);
 //            System.out.println("++++ completeResponse " + completeResponse.toString());
 //            log.error("<== Testing log : " + methodName + ",userId=" + userId);
@@ -792,5 +793,63 @@ public class GlossaryAuthorViewRestClient extends FFDCRESTClient {
                 parameterizedType,
                 expandedURL,
                 term,
-                params);}
+                params);
+    }
+
+    public <T> GenericResponse<T> putRESTCall(String userId,
+                                                     String guid,
+                                                     String methodName,
+                                                     String urnTemplate,
+                                                     ParameterizedTypeReference<GenericResponse<T>> parameterizedType,
+                                                     Relationship relationship,
+                                                     Object... params)
+            throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException {
+        if (log.isDebugEnabled()) {
+            log.debug("==> Method: " + methodName + ",userId=" + userId);
+        }
+
+        //String guid = glossary.getSystemAttributes().getGUID();
+        //String urlString = String.format(BASE_URL + "/%s",guid);
+        String expandedURL = String.format(serverPlatformURLRoot + urnTemplate + "/%s", serverName, userId, guid);
+
+        if (log.isDebugEnabled()) {
+            log.debug("<== Glossary successful method : " + methodName + ",userId=" + userId);
+        }
+
+        return callPutRESTCall(methodName,
+                parameterizedType,
+                expandedURL,
+                relationship,
+                params);
+
+    }
+
+    public <T> GenericResponse<T> putRESTCall(String userId, String guid, String methodName, String urlTemplate, ParameterizedTypeReference<GenericResponse<T>> parameterizedType, T t)
+            throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException {
+
+            if (log.isDebugEnabled()) {
+                log.debug("==> Method: " + methodName + ",userId=" + userId);
+            }
+
+            //String guid = glossary.getSystemAttributes().getGUID();
+            //String urlString = String.format(BASE_URL + "/%s",guid);
+            String expandedURL = String.format(serverPlatformURLRoot + urlTemplate , serverName, userId, guid);
+/*        for (Object o:params){
+            System.out.println("Object value " + o.toString());
+        }
+        System.out.println("params term rest client " + params.toString());
+*/
+
+            System.out.println(expandedURL);
+
+            if (log.isDebugEnabled()) {
+                log.debug("<== Glossary successful method : " + methodName + ",userId=" + userId);
+            }
+
+            return callPutRESTCall(methodName,
+                    parameterizedType,
+                    expandedURL,
+                    t,
+                    true);
+    }
 }
