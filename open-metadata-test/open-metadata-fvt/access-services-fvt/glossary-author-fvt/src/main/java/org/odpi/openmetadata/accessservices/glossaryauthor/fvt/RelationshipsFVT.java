@@ -83,7 +83,7 @@ public class RelationshipsFVT {
         termFVT = new TermFVT(url, serverName, userId);
         catFVT = new CategoryFVT(url, serverName, userId);
         glossaryFVT = new GlossaryFVT(url, serverName, userId);
-        projectFVT = null; //new ProjectFVT(url, serverName, userId);
+        projectFVT = new ProjectFVT(url, serverName, userId);
         this.serverName = serverName;
         this.userId = userId;
     }
@@ -243,11 +243,15 @@ public class RelationshipsFVT {
         if (term1relationshipcount != numberofrelationships) {
             throw new GlossaryAuthorFVTCheckedException("Expected " + term1Relationships.size() + " got " + numberofrelationships  );
         }
-/*      TODO
+
+
         Project project= projectFVT.createProject(DEFAULT_TEST_PROJECT_NAME );
+        if (project == null) System.out.println("Project is NULL !!!");
+        if (term1 == null) System.out.println("term1 is NULL !!!");
+
         projectScopeFVT(project, term1);
         projectFVT.deleteProject(project.getSystemAttributes().getGUID());
-*/
+
         Category cat3 = catFVT.createCategory(DEFAULT_TEST_CAT_NAME3, glossaryGuid);
         Category cat4 = catFVT.createCategory(DEFAULT_TEST_CAT_NAME4, glossaryGuid);
 //   TODO        categoryHierarchyLinkFVT(cat3, cat4);
@@ -1062,8 +1066,8 @@ public class RelationshipsFVT {
 
         System.out.println("Replaced HASARelationship " + replacedHasA);
 
-/*      TODO
-        // check that term1 and term3 have the spine object and attribute flags sets
+//      TODO
+ /*       // check that term1 and term3 have the spine object and attribute flags sets
 
         Term term1PostCreate = termFVT.getTermByGUID(term1.getSystemAttributes().getGUID());
         if (!term1PostCreate.isSpineObject()) {
@@ -1453,8 +1457,13 @@ public class RelationshipsFVT {
         return createdTermCategorization;
     }
 
-/*
+
     private void projectScopeFVT(Project project, Term term) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, GlossaryAuthorFVTCheckedException {
+        String relType = PROJECT_SCOPE;
+        ResolvableType resolvableType = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, ProjectScope.class);
+        ParameterizedTypeReference<GenericResponse<ProjectScope>> type = ParameterizedTypeReference.forType(resolvableType.getType());
+
+
         ProjectScope createdProjectScope = createProjectScope(project, term);
         FVTUtils.validateRelationship(createdProjectScope);
 //        if (projectFVT.getProjectTerms(project.getSystemAttributes().getGUID()).size() !=1){
@@ -1464,14 +1473,14 @@ public class RelationshipsFVT {
         System.out.println("Created ProjectScopeRelationship " + createdProjectScope);
         String guid = createdProjectScope.getGuid();
 
-        ProjectScope gotProjectScopeRelationship = glossaryAuthorViewRelationshipsClient.projectScope().getByGUID(this.userId, guid);
+        ProjectScope gotProjectScopeRelationship = glossaryAuthorViewRelationshipsClient.getRel(this.userId, guid,type, relType);
         FVTUtils.validateRelationship(gotProjectScopeRelationship);
         System.out.println("Got ProjectScopeRelationship " + gotProjectScopeRelationship);
 
         ProjectScope updateProjectScope = new ProjectScope();
         updateProjectScope.setDescription("ddd2");
         updateProjectScope.setGuid(createdProjectScope.getGuid());
-        ProjectScope updatedProjectScope = glossaryAuthorViewRelationshipsClient.projectScope().update(this.userId, guid, updateProjectScope);
+        ProjectScope updatedProjectScope = glossaryAuthorViewRelationshipsClient.updateRel(this.userId, guid, updateProjectScope,type,relType,false);
         FVTUtils.validateRelationship(updatedProjectScope);
         if (!updatedProjectScope.getDescription().equals(updateProjectScope.getDescription())) {
             throw new GlossaryAuthorFVTCheckedException("ERROR: Project scope  update scopeDescription not as expected");
@@ -1479,24 +1488,24 @@ public class RelationshipsFVT {
 
         FVTUtils.checkEnds(updatedProjectScope,createdProjectScope,"ProjectScope","update");
 
-        System.out.println("Updated ProjectScopeRelationship " + createdProjectScope);
+        System.out.println("Updated ProjectScopeRelationship " + updatedProjectScope);
         ProjectScope replaceProjectScope = new ProjectScope();
         replaceProjectScope.setDescription("ddd3");
-        ProjectScope replacedProjectScope = glossaryAuthorViewRelationshipsClient.projectScope().replace(this.userId, guid, replaceProjectScope);
+        ProjectScope replacedProjectScope = glossaryAuthorViewRelationshipsClient.replaceRel(this.userId, guid, replaceProjectScope, type,relType,true);
         FVTUtils.validateRelationship(replacedProjectScope);
         if (!replacedProjectScope.getDescription().equals(replaceProjectScope.getDescription())) {
             throw new GlossaryAuthorFVTCheckedException("ERROR: project scope replace scope description not as expected");
         }
         FVTUtils.checkEnds(replacedProjectScope,createdProjectScope,"ProjectScope","replace");
 
-        System.out.println("Replaced ProjectScopeRelationship " + createdProjectScope);
-        glossaryAuthorViewRelationshipsClient.projectScope().delete(this.userId, guid);
+        System.out.println("Replaced ProjectScopeRelationship " + replacedProjectScope);
+        glossaryAuthorViewRelationshipsClient.deleteRel(this.userId, guid,type,relType);
         //FVTUtils.validateLine(gotProjectScopeRelationship);
         System.out.println("Deleted ProjectScopeRelationship with userId=" + guid);
-        gotProjectScopeRelationship = glossaryAuthorViewRelationshipsClient.projectScope().restore(this.userId, guid);
+        gotProjectScopeRelationship = glossaryAuthorViewRelationshipsClient.restoreRel(this.userId, guid,type,relType);
         FVTUtils.validateRelationship(gotProjectScopeRelationship);
         System.out.println("Restored ProjectScopeRelationship with userId=" + guid);
-        glossaryAuthorViewRelationshipsClient.projectScope().delete(this.userId, guid);
+        glossaryAuthorViewRelationshipsClient.deleteRel(this.userId, guid,type,relType);
         //FVTUtils.validateLine(gotProjectScopeRelationship);
 
         System.out.println("Hard deleted ProjectScopeRelationship with userId=" + guid);
@@ -1506,12 +1515,17 @@ public class RelationshipsFVT {
         ProjectScope projectScope = new ProjectScope();
         projectScope.getEnd1().setNodeGuid(project.getSystemAttributes().getGUID());
         projectScope.getEnd2().setNodeGuid(term.getSystemAttributes().getGUID());
-        ProjectScope createdProjectScope = glossaryAuthorViewRelationshipsClient.projectScope().create(this.userId, projectScope);
+
+        ResolvableType resolvableType = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, ProjectScope.class);
+        ParameterizedTypeReference<GenericResponse<ProjectScope>> type = ParameterizedTypeReference.forType(resolvableType.getType());
+
+
+        ProjectScope createdProjectScope = glossaryAuthorViewRelationshipsClient.createRel(this.userId, projectScope,type, PROJECT_SCOPE);
         FVTUtils.validateRelationship(createdProjectScope);
         System.out.println("CreatedProjectScopeRelationship " + createdProjectScope);
         return createdProjectScope;
     }
-*/
+
     private void categoryHierarchyLinkFVT(Category parent, Category child) throws UserNotAuthorizedException, PropertyServerException, InvalidParameterException, GlossaryAuthorFVTCheckedException {
 
         String relType = CATEGORY_HIERARCHY_LINK;
