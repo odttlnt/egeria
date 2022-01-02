@@ -2,8 +2,9 @@
 /* Copyright Contributors to the ODPi Egeria project. */
 package org.odpi.openmetadata.accessservices.glossaryauthor.fvt;
 
+import org.odpi.openmetadata.accessservices.glossaryauthor.fvt.client.GlossaryAuthorViewRestClient;
+import org.odpi.openmetadata.accessservices.glossaryauthor.fvt.client.graph.GlossaryAuthorViewGraphClient;
 import org.odpi.openmetadata.accessservices.subjectarea.client.SubjectAreaRestClient;
-import org.odpi.openmetadata.accessservices.subjectarea.client.relationships.SubjectAreaGraph;
 import org.odpi.openmetadata.accessservices.subjectarea.client.relationships.SubjectAreaGraphClient;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.enums.*;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.category.Category;
@@ -15,6 +16,8 @@ import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.graph
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.graph.Node;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.graph.NodeType;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.term.Term;
+import org.odpi.openmetadata.adminservices.configuration.properties.OMAGServerConfig;
+import org.odpi.openmetadata.adminservices.configuration.properties.ViewServiceConfig;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.InvalidParameterException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException;
@@ -32,7 +35,7 @@ public class GraphFVT
     private static final String DEFAULT_TEST_TERM_NAME2 = "Test term 2";
     private static final String DEFAULT_TEST_TERM_NAME3 = "Test term 3";
     private static final String DEFAULT_TEST_CATEGORY_NAME = "Test category 1";
-    private SubjectAreaGraph subjectAreaGraph = null;
+    private GlossaryAuthorViewGraphClient glossaryAuthorViewGraphClient = null;
     private GlossaryFVT glossaryFVT =null;
     private TermFVT termFVT = null;
     private RelationshipsFVT relationshipFVT = null;
@@ -41,7 +44,7 @@ public class GraphFVT
 
     private String serverName = null;
     private String userId = null;
-
+    private String omagServer;
     public static void main(String args[])
     {
         try
@@ -60,14 +63,25 @@ public class GraphFVT
 
     }
     public GraphFVT(String url, String serverName,String userId) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
-        SubjectAreaRestClient client = new SubjectAreaRestClient(serverName, url);
-        subjectAreaGraph = new SubjectAreaGraphClient(client);
+        GlossaryAuthorViewRestClient client = new GlossaryAuthorViewRestClient(serverName, url);
+        glossaryAuthorViewGraphClient = new GlossaryAuthorViewGraphClient(client);
         System.out.println("Create a glossary");
         glossaryFVT = new GlossaryFVT(url,serverName,userId);
         termFVT = new TermFVT(url,serverName,userId);
         categoryFVT = new CategoryFVT(url,serverName,userId);
         relationshipFVT = new RelationshipsFVT(url,serverName,userId);
-        subjectAreaFVT = new SubjectAreaDefinitionCategoryFVT(url,serverName,userId);
+
+//        retrieveOmagConfig();
+//        retrieveOmagServerName();
+        omagServer = retrieveOmagServerName("Glossary Author");
+
+        System.out.println("OMAGSERVER " + omagServer );
+
+        subjectAreaFVT = new SubjectAreaDefinitionCategoryFVT(url, serverName,omagServer,userId);
+
+
+
+//        subjectAreaFVT = new SubjectAreaDefinitionCategoryFVT(url,serverName,userId);
         this.serverName=serverName;
         this.userId=userId;
     }
@@ -78,6 +92,40 @@ public class GraphFVT
         categoryFVT.deleteRemainingCategories();
         relationshipFVT.deleteRemaining();
         glossaryFVT.deleteRemainingGlossaries();
+    }
+
+/*    private String retrieveOmagConfig() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
+        OMAGServerConfig config = glossaryAuthorViewGraphClient.getConfig(userId);
+//        System.out.println(config.toString());
+//        System.out.println(config.getViewServicesConfig().toString());
+        return config.getLocalServerName();
+    }
+    private ViewServiceConfig retrieveGlossaryAuthorConfig() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
+        return glossaryAuthorViewGraphClient.getGlossaryAuthViewServiceConfig(userId);
+
+    }
+
+    private String retrieveOmagServerName() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+        ViewServiceConfig config = retrieveGlossaryAuthorConfig();
+//        System.out.println(config.toString());
+//        System.out.println(config.getOMAGServerName());//getViewServicesConfig().toString());
+        return config.getOMAGServerName();
+    }*/
+
+    private String retrieveOmagServerName(String viewServiceName) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
+        List<ViewServiceConfig> viewServiceConfigs = glossaryAuthorViewGraphClient.getViewServiceConfigs(userId);
+        Map<String,Object> viewServiceOptions;
+//        System.out.println("  viewServiceConfigs  " + viewServiceConfigs.toString());
+
+        for (ViewServiceConfig vsc: viewServiceConfigs){
+//            System.out.println(vsc.getViewServiceName());
+            if (vsc.getViewServiceName().equals(viewServiceName)) {
+//                    System.out.println("$$$$$$$$$$$$  FOUND GLOSSARY AUTHOR $$$$$$$$$$$");
+                System.out.println("OMAG Server URL " + String.valueOf(vsc.getOMAGServerPlatformRootURL()));
+                return  String.valueOf(vsc.getOMAGServerName());
+            }
+        }
+        return null;
     }
     public static void runWith2Servers(String url) throws GlossaryAuthorFVTCheckedException, InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
         runIt(url, FVTConstants.SERVER_NAME1, FVTConstants.USERID);
@@ -111,6 +159,7 @@ public class GraphFVT
                 null,
                 3);
         checkGraphContent(graph,1,0);
+
         Term term1 =termFVT.createTerm(DEFAULT_TEST_TERM_NAME1,glossaryGuid);
         graph = getGraph(glossaryGuid,
                 null,
@@ -119,6 +168,7 @@ public class GraphFVT
                 null,
                 3);
         checkGraphContent(graph,2,1);
+
         Term term2 =termFVT.createTerm(DEFAULT_TEST_TERM_NAME2,glossaryGuid);
         graph = getGraph(glossaryGuid,
             null,
@@ -127,6 +177,9 @@ public class GraphFVT
             null,
                 3);
         checkGraphContent(graph,3,2);
+        System.out.println(graph.getNodes().toString());
+
+
         graph = getGraph(term1.getSystemAttributes().getGUID(),
                 null,
                 null,
@@ -139,15 +192,17 @@ public class GraphFVT
                 null,
                 null,
                 null,
-                2);
+                3);
         checkGraphContent(graph,3,2);
-        graph = getGraph(term1.getSystemAttributes().getGUID(),
+
+        graph = getGraph(term2.getSystemAttributes().getGUID(),
                 null,
                 null,
                 null,
                 null,
                 3);
         checkGraphContent(graph,3,2);
+
         relationshipFVT.createSynonym(term1,term2);
 
         graph = getGraph(term1.getSystemAttributes().getGUID(),
@@ -268,6 +323,7 @@ public class GraphFVT
     private void checkGraphContent(Graph graph,int expectedNodesSize,int expectedRelationshipsSize) throws GlossaryAuthorFVTCheckedException {
         System.out.println("CheckGraphContent expected " +expectedNodesSize + " Nodes and "+expectedRelationshipsSize + " Relationships" );
         if (graph.getNodes().size() !=expectedNodesSize ) {
+            System.out.println(graph.getNodes().toString());
             throw new GlossaryAuthorFVTCheckedException("ERROR: Expected " + expectedNodesSize +  " nodes, got " +graph.getNodes().size());
         }
         if (expectedRelationshipsSize ==0 && (graph.getRelationships() != null) ) {
@@ -287,7 +343,8 @@ public class GraphFVT
                            int level) throws InvalidParameterException,
                                                  PropertyServerException,
                                                  UserNotAuthorizedException {
-        return subjectAreaGraph.getGraph(
+
+        return glossaryAuthorViewGraphClient.getGraph(
                 userId,
                 guid,
                 asOfTime,
