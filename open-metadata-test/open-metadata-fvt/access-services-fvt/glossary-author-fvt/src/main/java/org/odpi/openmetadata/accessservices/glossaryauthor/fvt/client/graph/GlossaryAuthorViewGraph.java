@@ -15,6 +15,7 @@ import org.odpi.openmetadata.adminservices.configuration.properties.ViewServiceC
 import org.odpi.openmetadata.frameworks.connectors.ffdc.InvalidParameterException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException;
+import org.odpi.openmetadata.viewservices.glossaryauthor.properties.GraphStatistics;
 
 import java.util.Date;
 import java.util.List;
@@ -236,7 +237,48 @@ public interface GlossaryAuthorViewGraph {
     ViewServiceConfig getGlossaryAuthViewServiceConfig(String userId) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException;
 
     List<Relationship> getRelationships(String userId, String guid, FindRequest findRequest) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException;
+    /**
+     * Get graph for a particular node guid
+     *
+     * @param userId calling user
+     * @param guid                  the starting point of the query.
+     * @param nodeFilter            Set of node names to include in the query results.  Null means include
+     *                              all entities found, irrespective of their type.
+     * @param relationshipFilter    Set of relationship names to include in the query results.  Null means include
+     *                              all relationships found, irrespective of their type.
+     * @param asOfTime              Requests a historical query of the relationships for the entity.  Null means return the
+     *                              present values.
+     * @param statusFilter          By default only active instances are returned. Specify ALL to see all instance in any status.
+     *
+     * @return A graph of nodeTypes.
+     *
+     * @throws PropertyServerException something went wrong with the REST call stack.
+     * @throws UserNotAuthorizedException the requesting user is not authorized to issue this request.
+     * @throws InvalidParameterException one of the parameters is null or invalid
+     */
+    Graph getGraph(String userId, String guid, Date asOfTime, Set<NodeType> nodeFilter, Set<RelationshipType> relationshipFilter, StatusFilter statusFilter) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException;
 
-    Graph getGraph(String userId, String guid, Date asOfTime, Set<NodeType> nodeFilter, Set<RelationshipType> relationshipFilter, StatusFilter statusFilter, int level) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException;
+    /**
+     * Get graph for a particular node guid
+     *
+     * @param userId calling user
+     * @param guid                  the starting point of the query.
+     * @param asOfTime              Requests a historical query of the relationships for the entity.  Null means return the
+     *                              present values.
+     * @param nodeFilter            Set of node names to include in the query results.  Null means include
+     *                              all entities found, irrespective of their type.
+     * @param relationshipFilter    Set of relationship names to include in the query results.  Null means include
+     *                              all relationships found, irrespective of their type.
+
+     * @param statusFilter          By default only active instances are returned. Specify ALL to see all instance in any status.
+     *
+     * @return A graph statistics of nodeTypes.
+     *
+     * @throws PropertyServerException something went wrong with the REST call stack.
+     * @throws UserNotAuthorizedException the requesting user is not authorized to issue this request.
+     * @throws InvalidParameterException one of the parameters is null or invalid
+     */
+
+    GraphStatistics getGraphStatistics(String userId, String guid, Date asOfTime, Set<NodeType> nodeFilter, Set<RelationshipType> relationshipFilter, StatusFilter statusFilter) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException;
 }
 

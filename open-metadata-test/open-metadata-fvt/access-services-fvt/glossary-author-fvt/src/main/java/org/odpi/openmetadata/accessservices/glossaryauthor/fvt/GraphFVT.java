@@ -4,8 +4,6 @@ package org.odpi.openmetadata.accessservices.glossaryauthor.fvt;
 
 import org.odpi.openmetadata.accessservices.glossaryauthor.fvt.client.GlossaryAuthorViewRestClient;
 import org.odpi.openmetadata.accessservices.glossaryauthor.fvt.client.graph.GlossaryAuthorViewGraphClient;
-import org.odpi.openmetadata.accessservices.subjectarea.client.SubjectAreaRestClient;
-import org.odpi.openmetadata.accessservices.subjectarea.client.relationships.SubjectAreaGraphClient;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.enums.*;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.category.Category;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.category.SubjectAreaDefinition;
@@ -16,11 +14,12 @@ import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.graph
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.graph.Node;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.graph.NodeType;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.term.Term;
-import org.odpi.openmetadata.adminservices.configuration.properties.OMAGServerConfig;
 import org.odpi.openmetadata.adminservices.configuration.properties.ViewServiceConfig;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.InvalidParameterException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException;
+import org.odpi.openmetadata.viewservices.glossaryauthor.properties.GraphStatistics;
+import org.odpi.openmetadata.viewservices.glossaryauthor.properties.NodeRelationshipStats;
 
 import java.io.IOException;
 import java.util.*;
@@ -94,24 +93,6 @@ public class GraphFVT
         glossaryFVT.deleteRemainingGlossaries();
     }
 
-/*    private String retrieveOmagConfig() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
-        OMAGServerConfig config = glossaryAuthorViewGraphClient.getConfig(userId);
-//        System.out.println(config.toString());
-//        System.out.println(config.getViewServicesConfig().toString());
-        return config.getLocalServerName();
-    }
-    private ViewServiceConfig retrieveGlossaryAuthorConfig() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
-        return glossaryAuthorViewGraphClient.getGlossaryAuthViewServiceConfig(userId);
-
-    }
-
-    private String retrieveOmagServerName() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
-        ViewServiceConfig config = retrieveGlossaryAuthorConfig();
-//        System.out.println(config.toString());
-//        System.out.println(config.getOMAGServerName());//getViewServicesConfig().toString());
-        return config.getOMAGServerName();
-    }*/
-
     private String retrieveOmagServerName(String viewServiceName) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
         List<ViewServiceConfig> viewServiceConfigs = glossaryAuthorViewGraphClient.getViewServiceConfigs(userId);
         Map<String,Object> viewServiceOptions;
@@ -156,8 +137,8 @@ public class GraphFVT
                 null,
                 null,
                 null,
-                null,
-                3);
+                null);
+//                3);
         checkGraphContent(graph,1,0);
 
         Term term1 =termFVT.createTerm(DEFAULT_TEST_TERM_NAME1,glossaryGuid);
@@ -165,8 +146,8 @@ public class GraphFVT
                 null,
                 null,
                 null,
-                null,
-                3);
+                null);
+//                3);
         checkGraphContent(graph,2,1);
 
         Term term2 =termFVT.createTerm(DEFAULT_TEST_TERM_NAME2,glossaryGuid);
@@ -174,8 +155,8 @@ public class GraphFVT
             null,
             null,
             null,
-            null,
-                3);
+            null);
+//                3);
         checkGraphContent(graph,3,2);
         System.out.println(graph.getNodes().toString());
 
@@ -184,41 +165,44 @@ public class GraphFVT
                 null,
                 null,
                 null,
-                null,
-                1);
+                null);
+//                1);
         checkGraphContent(graph,2,1);
-        graph = getGraph(term1.getSystemAttributes().getGUID(),
-                null,
-                null,
-                null,
-                null,
-                3);
-        checkGraphContent(graph,3,2);
 
         graph = getGraph(term2.getSystemAttributes().getGUID(),
                 null,
                 null,
                 null,
+                null);
+//                3);
+        checkGraphContent(graph,2,1);
+
+/*        graph = getGraph(term1.getSystemAttributes().getGUID(),
+                null,
+                null,
+                null,
                 null,
                 3);
         checkGraphContent(graph,3,2);
 
+
+*/
         relationshipFVT.createSynonym(term1,term2);
 
         graph = getGraph(term1.getSystemAttributes().getGUID(),
                 null,
                 null,
                 null,
-                null,
-                3);
-        checkGraphContent(graph,3,3);
+                null);
+//                3);
+        checkGraphContent(graph,3,2);
 
         graph = getGraph(term1.getSystemAttributes().getGUID(),
                 null,
                 null,
                 new HashSet<>(Arrays.asList(RelationshipType.Synonym)),
-                null,
-                3);
+                null);
+//                3);
         checkGraphContent(graph,2,1);
 
         Term term3 =termFVT.createTerm(DEFAULT_TEST_TERM_NAME3,glossaryGuid);
@@ -227,10 +211,11 @@ public class GraphFVT
                 null,
                 null,
                 new HashSet<>(Arrays.asList(RelationshipType.Synonym)),
-                null,
-                3);
+                null);
+//                3);
         // expect 3 terms with the 2 Synonym relationships from term1.
         checkGraphContent(graph,3,2);
+
 
         // at this stage we should have a glossary, 3 terms, 3 term to glossary relationships and 2 synonym relationships
         // confirm that we have this number
@@ -238,24 +223,25 @@ public class GraphFVT
                 null,
                 null,
                 null,
-                null,
-                3);
-        checkGraphContent(graph,4,5);
+                null);
+//                3);
+        System.out.println(graph.getRelationships().toString());
+        checkGraphContent(graph,4,3);
+
 
         graph = getGraph(term3.getSystemAttributes().getGUID(),
                 null,
                 null,
                 new HashSet<>(Arrays.asList(RelationshipType.Synonym)),
-                null,
-                1);
+                null);
+//                1);
         checkGraphContent(graph,2,1);
         graph = getGraph(glossaryGuid,
                 null,
                 new HashSet<>(Arrays.asList(NodeType.Glossary,NodeType.Term)),
                 null,
-
-                null,
-                1);
+                null);
+//                1);
         // expect to only pick up the TermAnchor relationships not the synonyms because we have depth 1.
         checkGraphContent(graph,4,3);
 
@@ -266,16 +252,16 @@ public class GraphFVT
                 null,
                 new HashSet<>(Arrays.asList(NodeType.Glossary,NodeType.Term)),
                 null,
-                null,
-                1);
+                null);
+//                1);
         checkGraphContent(graph,4,3);
         // check we now pickup the category as well
         graph = getGraph(glossaryGuid,
                 null,
                 new HashSet<>(Arrays.asList(NodeType.Glossary,NodeType.Term,NodeType.Category)),
                 null,
-                null,
-                1);
+                null);
+//                1);
         checkGraphContent(graph,5,4);
 
         Taxonomy taxonomy= glossaryFVT.getTaxonomyForInput(DEFAULT_TEST_GLOSSARY_NAME);
@@ -286,12 +272,58 @@ public class GraphFVT
                 null,
                null,
                 null,
-                null,
-                3);
+                null);
+//                3);
         checkGraphContent(graph,2,1);
 
         checkNodesContainNodeType(graph,NodeType.Taxonomy);
         checkNodesContainNodeType(graph,NodeType.SubjectAreaDefinition);
+
+
+    // Glossary Statistics
+        GraphStatistics graphST = getGraphStats(taxonomyGuid,
+                null,
+                null,
+                null,
+                null);
+        System.out.println("taxonomyGuid " + graphST.toString());
+        //check for nodeOrRelationshipTypeName as Taxonamy
+        checkGraphStats1(graphST,"Taxonomy");
+
+
+        graphST = getGraphStats(glossaryGuid,
+                null,
+                null,
+                null,
+                null);
+        //check for nodeCounts and Relationship counts for term
+        checkGraphStats2(graphST,"Term",3,"TermAnchor",3);
+
+        graphST = getGraphStats(term3.getSystemAttributes().getGUID(),
+                null,
+                null,
+                null,
+                null);
+        //check for node Term count & Relationship Synonym count
+        checkGraphStats2(graphST,"Term",2,"Synonym",1);
+
+        graphST = getGraphStats(term1.getSystemAttributes().getGUID(),
+                null,
+                null,
+                null,
+                null);
+        //check for node Term count & Relationship Synonym count
+        checkGraphStats2(graphST,"Term",3,"Synonym",2);
+
+        graphST = getGraphStats(subjectAreaDefinition.getSystemAttributes().getGUID(),
+                null,
+                null,
+                null,
+                null);
+        //check for getNodeCounts() and getRelationshipCounts()
+        checkGraphStats(graphST,2,1);
+
+
         // delete the term, category and subject area we created.
         subjectAreaFVT.deleteSubjectAreaDefinition(subjectAreaDefinition.getSystemAttributes().getGUID());
         categoryFVT.deleteCategory(category.getSystemAttributes().getGUID());
@@ -300,6 +332,55 @@ public class GraphFVT
         termFVT.deleteTerm(term3.getSystemAttributes().getGUID());
         glossaryFVT.deleteGlossary(taxonomyGuid);
         glossaryFVT.deleteGlossary(glossaryGuid);
+    }
+
+    private void checkGraphStats1(GraphStatistics graphST, String nodeToCheck) throws GlossaryAuthorFVTCheckedException {
+            Map<String, NodeRelationshipStats> nodeInfos = graphST.getNodeCounts();
+ //           System.out.println(nodeInfos.keySet());
+//            for (Map<String, NodeRelationshipStats> nodeInfo: nodeInfos) System.out.println();
+            if (!nodeInfos.containsKey(nodeToCheck)){
+                throw new GlossaryAuthorFVTCheckedException("ERROR: Expected to find "+ nodeToCheck + " but it did not exist");
+            }
+    }
+    private void checkGraphStats2(GraphStatistics graphST,String nodeTypeName, int  nodecount, String relTypeName, int relationshipCount) throws GlossaryAuthorFVTCheckedException {
+        Map<String, NodeRelationshipStats> nodeInfos = graphST.getNodeCounts();
+        Map<String, NodeRelationshipStats> relaInfos = graphST.getRelationshipCounts();
+        NodeRelationshipStats nrStats;
+
+
+        for (Map.Entry<String, NodeRelationshipStats> mapEntry: nodeInfos.entrySet()){
+            if (mapEntry.getKey().equals(nodeTypeName)){
+                nrStats = mapEntry.getValue();
+                if (nrStats.getCount() != nodecount)
+                    throw new GlossaryAuthorFVTCheckedException("ERROR: Expected to find "+ nodecount + " nodes but found " + nrStats.getCount());
+/*                System.out.println(mapEntry.getValue());
+                System.out.println(nrStats.getCount());
+                System.out.println(nrStats.getNodeOrRelationshipTypeName());
+*/
+            }
+        }
+        for (Map.Entry<String, NodeRelationshipStats> mapEntry: relaInfos.entrySet()){
+            if (mapEntry.getKey().equals(relTypeName)){
+                nrStats = mapEntry.getValue();
+                if (nrStats.getCount() != relationshipCount)
+                    throw new GlossaryAuthorFVTCheckedException("ERROR: Expected to find "+ relationshipCount + " relationships but found " + nrStats.getCount());
+                System.out.println(mapEntry.getValue());
+                System.out.println(nrStats.getCount());
+                System.out.println(nrStats.getNodeOrRelationshipTypeName());
+            }
+        }
+    }
+
+    private void checkGraphStats(GraphStatistics graphST, int nodeCount, int relCount) throws GlossaryAuthorFVTCheckedException {
+        Map<String, NodeRelationshipStats> nodeInfos = graphST.getNodeCounts();
+        Map<String, NodeRelationshipStats> relaInfos = graphST.getRelationshipCounts();
+        if (!(nodeInfos.size() == nodeCount)){
+            throw new GlossaryAuthorFVTCheckedException("ERROR: Expected to find "+ nodeCount + " node but it found " + nodeInfos.size());
+        }
+
+        if (!(relaInfos.size() == relCount)){
+            throw new GlossaryAuthorFVTCheckedException("ERROR: Expected to find "+ relCount + " relationships but it found " + nodeInfos.size());
+        }
     }
 
     private void checkNodesContainNodeType(Graph graph, NodeType nodeTypeToCheck) throws GlossaryAuthorFVTCheckedException {
@@ -339,8 +420,9 @@ public class GraphFVT
                            Date asOfTime,
                            Set<NodeType> nodeFilter,
                            Set<RelationshipType> relationshipFilter,
-                           StatusFilter statusFilter,   // may need to extend this for controlled terms
-                           int level) throws InvalidParameterException,
+                           StatusFilter statusFilter)   // may need to extend this for controlled terms
+                           //int level)
+                                            throws InvalidParameterException,
                                                  PropertyServerException,
                                                  UserNotAuthorizedException {
 
@@ -350,7 +432,27 @@ public class GraphFVT
                 asOfTime,
                 nodeFilter,
                 relationshipFilter,
-                statusFilter,
-                level);
+                statusFilter);
+//                level);
+    }
+
+
+    private GraphStatistics getGraphStats(String guid,
+                           Date asOfTime,
+                           Set<NodeType> nodeFilter,
+                           Set<RelationshipType> relationshipFilter,
+                           StatusFilter statusFilter)   // may need to extend this for controlled terms
+                            throws InvalidParameterException,
+            PropertyServerException,
+            UserNotAuthorizedException {
+
+        return glossaryAuthorViewGraphClient.getGraphStatistics(
+                userId,
+                guid,
+                asOfTime,
+                nodeFilter,
+                relationshipFilter,
+                statusFilter);
+//                level);
     }
 }

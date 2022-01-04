@@ -24,6 +24,7 @@ import org.odpi.openmetadata.commonservices.ffdc.rest.ResponseParameterization;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.InvalidParameterException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException;
+import org.odpi.openmetadata.viewservices.glossaryauthor.properties.GraphStatistics;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.ResolvableType;
 
@@ -40,6 +41,7 @@ public class GlossaryAuthorViewGraphClient implements GlossaryAuthorViewGraph, R
 
     protected final GlossaryAuthorViewRestClient client;
     private static final String BASE_URL = GLOSSARY_AUTHOR_BASE_URL + "graph";
+    private static final String BASE_URL_GPSTATS = GLOSSARY_AUTHOR_BASE_URL + "graph-counts";
     ///servers/{viewServerName}/open-metadata/view-services/dino/users/{userId}/server/{serverName}/instance/configuration
 //    "/servers/{viewServerName}/open-metadata/view-services/dino/users/{userId}/server/{serverName}/configuration
 
@@ -241,13 +243,42 @@ public class GlossaryAuthorViewGraphClient implements GlossaryAuthorViewGraph, R
     }
 
     @Override
+    public GraphStatistics getGraphStatistics(String userId,
+                              String guid,
+                              Date asOfTime,
+                              Set<NodeType> nodeFilter,
+                              Set<RelationshipType> relationshipFilter,
+                              StatusFilter statusFilter)
+                                throws InvalidParameterException,
+            PropertyServerException,
+            UserNotAuthorizedException
+    {
+        ResolvableType resolvableType = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, GraphStatistics.class);
+        ParameterizedTypeReference<GenericResponse<GraphStatistics>> type = ParameterizedTypeReference.forType(resolvableType.getType());
+
+
+        NeighborhoodHistoricalFindRequest request = new NeighborhoodHistoricalFindRequest();
+        request.setAsOfTime(asOfTime);
+        request.setNodeFilter(nodeFilter);
+        request.setRelationshipFilter(relationshipFilter);
+//        request.setLevel(level);
+        request.setStatusFilter(statusFilter);
+//       return getGraph(userId, guid, request);
+        final String methodName = "getGraphStatistics";;
+
+        String urlTemplate = BASE_URL_GPSTATS + "/%s" + createGraphQuery(request).toString();
+        GenericResponse<GraphStatistics> response = client.getByIdRESTCall(userId, guid, methodName, type, urlTemplate);
+        return response.head().get();
+    }
+
+    @Override
     public Graph getGraph(String userId,
                           String guid,
                           Date asOfTime,
                           Set<NodeType> nodeFilter,
                           Set<RelationshipType> relationshipFilter,
-                          StatusFilter statusFilter,
-                          int level) throws InvalidParameterException,
+                          StatusFilter statusFilter)
+                          throws InvalidParameterException,
             PropertyServerException,
             UserNotAuthorizedException
     {
@@ -255,7 +286,7 @@ public class GlossaryAuthorViewGraphClient implements GlossaryAuthorViewGraph, R
         request.setAsOfTime(asOfTime);
         request.setNodeFilter(nodeFilter);
         request.setRelationshipFilter(relationshipFilter);
-        request.setLevel(level);
+//        request.setLevel(level);
         request.setStatusFilter(statusFilter);
 //       return getGraph(userId, guid, request);
         final String methodName = "getGraph";;
@@ -279,8 +310,8 @@ public class GlossaryAuthorViewGraphClient implements GlossaryAuthorViewGraph, R
 
         return queryBuilder
                 .addParam("asOfTime", request.getAsOfTime())
-                .addParam("statusFilter", request.getStatusFilter().name())
-                .addParam("level", request.getLevel());
+                .addParam("statusFilter", request.getStatusFilter().name());
+//                .addParam("level", request.getLevel());
     }
 
 
