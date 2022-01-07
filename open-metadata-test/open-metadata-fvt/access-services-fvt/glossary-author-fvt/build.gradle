@@ -81,6 +81,10 @@ task startServer(dependsOn: ['cleanData',':open-metadata-distribution:open-metad
              "-Dlogging.level.org.apache.catalina=DEBUG",
              "-Dlogging.level.org.odpi.openmetadata.viewservices.glossaryauthor.server=DEBUG",
              "-jar",
+//added for IDE Debug, to debug server code
+            "-Xdebug",
+            "-Xrunjdwp:server=y,transport=dt_socket,address=8000,suspend=n",
+//End debug options
              "${distdir}/server/server-chassis-spring-${project.version}.jar" ]
     // Setting the output directories to be the same for ALL FVTs acts as a synchronization mechanism
     // - alternatively we need to ensure the server port is unique per test

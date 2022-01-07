@@ -153,8 +153,11 @@ public class GlossaryAuthorViewProjectClient implements GlossaryAuthorViewProjec
     public Project getByGUID(String userId, String guid) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
         ResolvableType resolvableType = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, Project.class);
         ParameterizedTypeReference<GenericResponse<Project>> type = ParameterizedTypeReference.forType(resolvableType.getType());
+
+        String urlTemplate = BASE_URL + "/%s";
+
         GenericResponse<Project> response =
-                client.getByGUIdRESTCall(userId, guid, getMethodInfo("getByGUID"), type, BASE_URL);
+                client.getByGUIdRESTCall(userId, guid, getMethodInfo("getByGUID"), type, urlTemplate);
         return response.head().get();
     }
 

@@ -116,11 +116,13 @@ public class GlossaryAuthorViewGlossaryClient implements GlossaryAuthorViewGloss
     @Override
     public Glossary getByGUID(String userId, String guid) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
 
+        String urlTemplate = BASE_URL + "/%s";
+
         GenericResponse<Glossary> response = client.getByGUIdRESTCall( userId,
                                 guid,
                                 getMethodInfo("getByGUID"),
                                 getParameterizedType(),
-                                BASE_URL);
+                                urlTemplate);
 
         return response.head().get();
     }

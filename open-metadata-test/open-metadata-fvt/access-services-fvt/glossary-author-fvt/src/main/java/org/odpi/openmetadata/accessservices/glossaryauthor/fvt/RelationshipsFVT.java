@@ -254,7 +254,7 @@ public class RelationshipsFVT {
 
         Category cat3 = catFVT.createCategory(DEFAULT_TEST_CAT_NAME3, glossaryGuid);
         Category cat4 = catFVT.createCategory(DEFAULT_TEST_CAT_NAME4, glossaryGuid);
-//   TODO        categoryHierarchyLinkFVT(cat3, cat4);
+        categoryHierarchyLinkFVT(cat3, cat4);
 
     }
 
@@ -1026,9 +1026,22 @@ public class RelationshipsFVT {
 
         HasA createdHasA = createHasA(term1, term3);
 
+        Term term1PostCreate = termFVT.getTermByGUID(term1.getSystemAttributes().getGUID());
+        System.out.println(" term1PostCreate.isSpineObject() " + term1PostCreate.isSpineObject());
+        System.out.println(" term1PostCreate GUID " + term1PostCreate.getSystemAttributes().getGUID());
+        System.out.println(" term1  GUID " + term1.getSystemAttributes().getGUID());
+
+        Term term3PostCreate = termFVT.getTermByGUID(term3.getSystemAttributes().getGUID());
+        System.out.println(" term3PostCreate.isSpineAttribute() " + term3PostCreate.isSpineAttribute());
+        System.out.println(" term3PostCreate GUID " + term3PostCreate.getSystemAttributes().getGUID());
+        System.out.println(" term3  GUID " + term3.getSystemAttributes().getGUID());
+
         FVTUtils.validateRelationship(createdHasA);
         System.out.println("Created Hasa " + createdHasA);
+        System.out.println("Hasa End1" + createdHasA.getEnd1().getNodeGuid());
+        System.out.println("Hasa End2" + createdHasA.getEnd2().getNodeGuid());
         String guid = createdHasA.getGuid();
+
 
         HasA gotHasATerm = glossaryAuthorViewRelationshipsClient.getRel(this.userId, guid,type,relType);
         FVTUtils.validateRelationship(gotHasATerm);
@@ -1065,19 +1078,29 @@ public class RelationshipsFVT {
         FVTUtils.checkEnds(updatedHasATerm, replacedHasA, "has-a", "replace");
 
         System.out.println("Replaced HASARelationship " + replacedHasA);
+        term1PostCreate = termFVT.getTermByGUID(term1.getSystemAttributes().getGUID());
+        System.out.println(" term1PostCreate.isSpineObject() " + term1PostCreate.isSpineObject());
+        term3PostCreate = termFVT.getTermByGUID(term3.getSystemAttributes().getGUID());
+        System.out.println(" term3PostCreate.isSpineAttribute() " + term3PostCreate.isSpineAttribute());
+//
+//  check that term1 and term3 have the spine object and attribute flags sets
 
-//      TODO
- /*       // check that term1 and term3 have the spine object and attribute flags sets
-
-        Term term1PostCreate = termFVT.getTermByGUID(term1.getSystemAttributes().getGUID());
+        term1PostCreate = termFVT.getTermByGUID(term1.getSystemAttributes().getGUID());
         if (!term1PostCreate.isSpineObject()) {
             throw new GlossaryAuthorFVTCheckedException("ERROR: expect term 1 to be a Spine Object");
         }
-        Term term3PostCreate = termFVT.getTermByGUID(term3.getSystemAttributes().getGUID());
+
+        term3PostCreate = termFVT.getTermByGUID(term3.getSystemAttributes().getGUID());
+
+        System.out.println("term3PostCreate " + term3PostCreate.toString());
+        System.out.println("term1Attribute " + term1PostCreate.isSpineAttribute());
+
+        System.out.println("term1PostCreate " + term1PostCreate.toString());
+
         if (!term3PostCreate.isSpineAttribute()) {
             throw new GlossaryAuthorFVTCheckedException("ERROR: expect term 3 to be a Spine Attribute");
         }
-*/
+
 
         glossaryAuthorViewRelationshipsClient.deleteRel(this.userId, guid,type,relType);
         //FVTUtils.validateLine(gotHASATerm);
@@ -1292,13 +1315,14 @@ public class RelationshipsFVT {
         //return;
         Synonym updateSynonym = new Synonym();
         updateSynonym.setDescription("ddd2");
-/*
+
+ /*
         updateSynonym.setSource("updatedSource");
         updateSynonym.setExpression("Ex1");
         updateSynonym.setSteward("Stew1");
-*/
-        System.out.println(" updateSynonym " + updateSynonym.toString());
 
+        System.out.println(" updateSynonym " + updateSynonym.toString());
+*/
         Synonym updatedSynonym = glossaryAuthorViewRelationshipsClient.updateRel(this.userId, guid, updateSynonym,type,relType,false);
         FVTUtils.validateRelationship(updatedSynonym);
         if (!updatedSynonym.getDescription().equals(updateSynonym.getDescription())) {

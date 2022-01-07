@@ -162,8 +162,11 @@ public class GlossaryAuthorViewGraphClient implements GlossaryAuthorViewGraph, R
     public Graph getByGUID(String userId, String guid) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
         ResolvableType resolvableType = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, Graph.class);
         ParameterizedTypeReference<GenericResponse<Graph>> type = ParameterizedTypeReference.forType(resolvableType.getType());
+
+        String urlTemplate = BASE_URL + "/%s";
+
         GenericResponse<Graph> response =
-                client.getByGUIdRESTCall(userId, guid, getMethodInfo("getByGUID"), type, BASE_URL);
+                client.getByGUIdRESTCall(userId, guid, getMethodInfo("getByGUID"), type, urlTemplate);
         return response.head().get();
     }
 

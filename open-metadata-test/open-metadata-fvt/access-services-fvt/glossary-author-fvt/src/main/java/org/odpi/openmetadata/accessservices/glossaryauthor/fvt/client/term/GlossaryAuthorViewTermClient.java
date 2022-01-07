@@ -153,8 +153,11 @@ public class GlossaryAuthorViewTermClient implements GlossaryAuthorViewTerm, Res
     public Term getByGUID(String userId, String guid) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
         ResolvableType resolvableType = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, Term.class);
         ParameterizedTypeReference<GenericResponse<Term>> type = ParameterizedTypeReference.forType(resolvableType.getType());
+
+        String urlTemplate = BASE_URL + "/%s";
+
         GenericResponse<Term> response =
-                client.getByGUIdRESTCall(userId, guid, getMethodInfo("getByGUID"), type, BASE_URL);
+                client.getByGUIdRESTCall(userId, guid, getMethodInfo("getByGUID"), type, urlTemplate);
         return response.head().get();
     }
 

@@ -126,7 +126,7 @@ public class CategoryHierarchyFVT
      * @param parent parent category
      * @param glossaryGuid userId of the associated glossary
      * @return a set of created categories
-     * @throws SubjectAreaCheckedException, SubjectAreaFVTCheckedException an error occurred.
+     * @throws GlossaryAuthorFVTCheckedException, GlossaryAuthorFVTCheckedException an error occurred.
      */
     private Set<Category> createChildrenCategories(Category parent,String glossaryGuid) throws GlossaryAuthorFVTCheckedException, InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
 

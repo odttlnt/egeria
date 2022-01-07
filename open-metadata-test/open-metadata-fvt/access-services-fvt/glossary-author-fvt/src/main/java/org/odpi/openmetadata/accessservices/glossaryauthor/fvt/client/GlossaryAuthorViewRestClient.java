@@ -108,6 +108,8 @@ public class GlossaryAuthorViewRestClient extends FFDCRESTClient {
 
         expandedURL = String.format(serverPlatformURLRoot + urnTemplate, serverName, userId, guid);
 
+        System.out.println(" ExpandedURL " + expandedURL);
+
         completeResponse = callGetRESTCall(methodName, type, expandedURL);
         exceptionHandler.detectAndThrowStandardExceptions(methodName, completeResponse);
 
