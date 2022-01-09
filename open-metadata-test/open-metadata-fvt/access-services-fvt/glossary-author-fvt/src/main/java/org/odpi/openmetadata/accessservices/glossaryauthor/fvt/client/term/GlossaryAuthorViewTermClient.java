@@ -61,6 +61,11 @@ public class GlossaryAuthorViewTermClient implements GlossaryAuthorViewTerm, Res
     }
 
     @Override
+    public Term update(String userId, String guid, Term term) throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException {
+        return update(userId,guid,term,false);
+    }
+
+    @Override
     public Term update(String userId, String guid, Term term, boolean isReplace) throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException {
         final String urlTemplate = BASE_URL + "/%s?isReplace=" + Boolean.toString(isReplace);
         String methodInfo = getMethodInfo("update(isReplace=" + isReplace + ")");
@@ -74,7 +79,7 @@ public class GlossaryAuthorViewTermClient implements GlossaryAuthorViewTerm, Res
                                                             urlTemplate,
                                                             getParameterizedType(),
                                                             term);
-
+        System.out.println(response.toString());
         return response.head().get();
     }
 

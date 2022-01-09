@@ -67,6 +67,8 @@ public interface GlossaryAuthorViewTerm {
      */
     Term update(String userId, String guid, Term term, boolean isReplace) throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException;
 
+    Term update(String userId, String guid, Term term) throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException;
+
     /**
      * Delete a Term.
      * <p>

@@ -584,13 +584,17 @@ public class TermFVT {
         }
         return restoredTerm;
     }
-    public Term updateTermToFuture(String guid, Term term) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
-        long now = new Date().getTime();
 
-       term.setEffectiveFromTime(new Date(now+6*1000*60*60*24).getTime());
-       term.setEffectiveToTime(new Date(now+7*1000*60*60*24).getTime());
+    public Term updateTermToFuture(long now, String guid, Term term) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
 
-        Term updatedTerm = glossaryAuthorViewTermClient.update(this.userId, guid, term,true);
+/*       term.setEffectiveFromTime(new Date(now+6*1000*60*60*24).getTime());
+       term.setEffectiveToTime(new Date(now+7*1000*60*60*24).getTime());*/
+
+        term.setEffectiveFromTime(new Date(now+1001*60*60*24).getTime());
+        term.setEffectiveToTime(new Date(now+1999*60*60*24).getTime());
+
+        Term updatedTerm = glossaryAuthorViewTermClient.update(this.userId, guid, term);
+//        Term updatedTerm = glossaryAuthorViewTermClient.update(this.userId, guid, term,true);
         if (updatedTerm != null)
         {
             System.out.println("Updated Term name to " + updatedTerm.getName());

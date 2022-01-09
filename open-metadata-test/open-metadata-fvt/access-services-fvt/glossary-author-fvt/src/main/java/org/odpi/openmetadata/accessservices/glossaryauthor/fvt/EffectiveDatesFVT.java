@@ -9,6 +9,7 @@ import org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException;
 
 import java.io.IOException;
+import java.util.Date;
 
 /**
  * FVT resource to call subject area client APIs to test the effectivity dates
@@ -68,6 +69,8 @@ public class EffectiveDatesFVT
     }
 
     public void run() throws GlossaryAuthorFVTCheckedException, InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+        long now = new Date().getTime();
+
         try
         {
             glossaryFVT.createPastToGlossary(DEFAULT_TEST_PAST_GLOSSARY_NAME);
@@ -97,7 +100,7 @@ public class EffectiveDatesFVT
         checkTermGlossaryEffectivity(futureGloss, gotTerm5);
 
         // update the term so that its effective dates not longer are compatible with the glossary
-        Term futureTerm = termFVT.updateTermToFuture(gotTerm5.getSystemAttributes().getGUID(), term5);
+        Term futureTerm = termFVT.updateTermToFuture(now,gotTerm5.getSystemAttributes().getGUID(), term5);
         FVTUtils.validateNode(futureTerm);
         checkTermGlossaryEffectivity(futureGloss, futureTerm);
         futureTerm = termFVT.getTermByGUID(term5.getSystemAttributes().getGUID());
