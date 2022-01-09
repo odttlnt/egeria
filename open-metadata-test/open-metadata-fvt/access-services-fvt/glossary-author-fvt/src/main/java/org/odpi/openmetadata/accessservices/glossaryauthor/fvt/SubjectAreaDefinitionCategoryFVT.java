@@ -2,6 +2,8 @@
 /* Copyright Contributors to the ODPi Egeria project. */
 package org.odpi.openmetadata.accessservices.glossaryauthor.fvt;
 
+import org.odpi.openmetadata.accessservices.glossaryauthor.fvt.client.GlossaryAuthorViewRestClient;
+import org.odpi.openmetadata.accessservices.glossaryauthor.fvt.client.graph.GlossaryAuthorViewGraphClient;
 import org.odpi.openmetadata.accessservices.subjectarea.client.SubjectAreaNodeClient;
 import org.odpi.openmetadata.accessservices.subjectarea.client.SubjectAreaRestClient;
 import org.odpi.openmetadata.accessservices.subjectarea.client.nodes.categories.SubjectAreaCategoryClient;
@@ -10,15 +12,13 @@ import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.commo
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.glossary.Glossary;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.nodesummary.CategorySummary;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.nodesummary.GlossarySummary;
+import org.odpi.openmetadata.adminservices.configuration.properties.ViewServiceConfig;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.InvalidParameterException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * FVT resource to call subject area subjectArea client API
@@ -34,6 +34,9 @@ public class SubjectAreaDefinitionCategoryFVT
     private GlossaryFVT glossaryFVT =null;
     private String userId = null;
     private int existingSubjectAreaCount = 0;
+    private static GlossaryAuthorViewRestClient glossaryAuthorViewRestClient = null;
+    private static GlossaryAuthorViewGraphClient     glossaryAuthorViewGraphClient = null;
+
     /*
      * Keep track of all the created guids in this set, by adding create and restore guids and removing when deleting.
      * At the end of the test it will delete any remaining guids.
@@ -62,9 +65,19 @@ public class SubjectAreaDefinitionCategoryFVT
         runIt(url, FVTConstants.SERVER_NAME2, FVTConstants.USERID);
     }
     public SubjectAreaDefinitionCategoryFVT(String url,String serverName,String userId) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
-        SubjectAreaRestClient client = new SubjectAreaRestClient(serverName, url);
-        subjectAreaCategory = new SubjectAreaCategoryClient<>(client);
+
+
+
         glossaryFVT = new GlossaryFVT(url,serverName,userId);
+        GraphFVT graphFVT = new GraphFVT(url, serverName, userId);
+        //graphFVT.glossaryAuthorViewGraphClient = new GlossaryAuthorViewGraphClient();
+        glossaryAuthorViewRestClient = new GlossaryAuthorViewRestClient(serverName, url);
+        glossaryAuthorViewGraphClient = new GlossaryAuthorViewGraphClient(glossaryAuthorViewRestClient);
+
+        String omagServer = retrieveOmagServerName("Glossary Author");
+
+        SubjectAreaRestClient client = new SubjectAreaRestClient(omagServer, url);
+        subjectAreaCategory = new SubjectAreaCategoryClient<>(client);
         this.userId=userId;
         existingSubjectAreaCount = findSubjectAreaDefinitions("").size();
         System.out.println("existingSubjectAreaCount " + existingSubjectAreaCount);
@@ -77,6 +90,23 @@ public class SubjectAreaDefinitionCategoryFVT
         this.userId=userId;
         existingSubjectAreaCount = findSubjectAreaDefinitions("").size();
         System.out.println("existingSubjectAreaCount " + existingSubjectAreaCount);
+    }
+
+    private String retrieveOmagServerName(String viewServiceName) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException, org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException {
+
+        List<ViewServiceConfig> viewServiceConfigs = glossaryAuthorViewGraphClient.getViewServiceConfigs(userId);
+        Map<String,Object> viewServiceOptions;
+//        System.out.println("  viewServiceConfigs  " + viewServiceConfigs.toString());
+
+        for (ViewServiceConfig vsc: viewServiceConfigs){
+//            System.out.println(vsc.getViewServiceName());
+            if (vsc.getViewServiceName().equals(viewServiceName)) {
+//                    System.out.println("$$$$$$$$$$$$  FOUND GLOSSARY AUTHOR $$$$$$$$$$$");
+                System.out.println("OMAG Server URL " + String.valueOf(vsc.getOMAGServerPlatformRootURL()));
+                return  String.valueOf(vsc.getOMAGServerName());
+            }
+        }
+        return null;
     }
 
     public static void runIt(String url, String serverName, String userId) throws GlossaryAuthorFVTCheckedException, InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
