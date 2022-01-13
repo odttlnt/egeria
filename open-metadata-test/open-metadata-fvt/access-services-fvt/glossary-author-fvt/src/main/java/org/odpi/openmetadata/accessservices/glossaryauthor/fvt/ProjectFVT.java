@@ -4,15 +4,23 @@ package org.odpi.openmetadata.accessservices.glossaryauthor.fvt;
 
 import org.odpi.openmetadata.accessservices.glossaryauthor.fvt.client.GlossaryAuthorViewRestClient;
 import org.odpi.openmetadata.accessservices.glossaryauthor.fvt.client.project.GlossaryAuthorViewProjectClient;
+import org.odpi.openmetadata.accessservices.glossaryauthor.fvt.client.relationships.GlossaryAuthorViewRelationshipsClient;
 import org.odpi.openmetadata.accessservices.subjectarea.client.SubjectAreaRestClient;
 import org.odpi.openmetadata.accessservices.subjectarea.client.nodes.projects.SubjectAreaProjectClient;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.common.FindRequest;
+import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.glossary.Glossary;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.graph.Relationship;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.project.GlossaryProject;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.project.Project;
+import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.term.Term;
+import org.odpi.openmetadata.accessservices.subjectarea.properties.relationships.ProjectScope;
+import org.odpi.openmetadata.accessservices.subjectarea.responses.SubjectAreaOMASAPIResponse;
+import org.odpi.openmetadata.commonservices.ffdc.rest.GenericResponse;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.InvalidParameterException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.ResolvableType;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -32,9 +40,14 @@ public class ProjectFVT
     private static final String DEFAULT_TEST_PROJECT_NAME5 = "Testproject5";
     private static final String DEFAULT_TEST_PROJECT_NAME6 = "Testproject6";
     private static final String DEFAULT_TEST_PROJECT_NAME7 = "Testproject7";
+    private static final String DEFAULT_TEST_PROJECT_NAME8 = "Testproject8";
+    private static final String DEFAULT_TEST_GLOSSARY_NAME = "Test Glossary for project FVT";
+    private static final String DEFAULT_TEST_TERM_NAME = "Test term A1";
+    private static final String PROJECT_SCOPE = "project-scopes";
+
   //  private SubjectAreaProjectClient<Project> subjectAreaProject = null;
     private GlossaryAuthorViewProjectClient glossaryAuthorViewProjectClient = null;
-
+    private GlossaryAuthorViewRelationshipsClient glossaryAuthorViewRelationshipsClient = null;
     private GlossaryFVT glossaryFVT =null;
     private TermFVT termFVT =null;
     private RelationshipsFVT relationshipsFVT =null;
@@ -53,6 +66,13 @@ public class ProjectFVT
     public ProjectFVT(String url, String serverName, String userId) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
         GlossaryAuthorViewRestClient client = new GlossaryAuthorViewRestClient(serverName, url);
         glossaryAuthorViewProjectClient = new GlossaryAuthorViewProjectClient(client);
+         glossaryAuthorViewRelationshipsClient =
+                            new GlossaryAuthorViewRelationshipsClient(client);
+        glossaryFVT = new GlossaryFVT(url, serverName, userId);
+        termFVT = new TermFVT(url, serverName, userId);
+
+
+
         this.serverName=serverName;
         this.userId=userId;
         existingProjectCount = findProjects("").size();
@@ -84,6 +104,8 @@ public class ProjectFVT
             System.out.println("ProjectFVT runIt started");
             ProjectFVT fvt = new ProjectFVT(url, serverName, userId);
             fvt.run();
+            fvt.termFVT.deleteRemainingTerms();
+            fvt.glossaryFVT.deleteRemainingGlossaries();
             fvt.deleteRemainingProjects();
             System.out.println("ProjectFVT runIt stopped");
         }
@@ -98,6 +120,13 @@ public class ProjectFVT
     }
 
     public void run() throws GlossaryAuthorFVTCheckedException, InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+
+        /*Glossary glossary = glossaryFVT.createGlossary(DEFAULT_TEST_GLOSSARY_NAME);
+        System.out.println("Create a term called " + DEFAULT_TEST_TERM_NAME + " using glossary GUID");
+        String glossaryGuid = glossary.getSystemAttributes().getGUID();
+        Term term1 = termFVT.createTerm(DEFAULT_TEST_TERM_NAME, glossaryGuid);*/
+
+
         System.out.println("Create a project");
         Project project = createProject(serverName+" "+DEFAULT_TEST_PROJECT_NAME);
         FVTUtils.validateNode(project);
@@ -171,15 +200,31 @@ public class ProjectFVT
         }
         Project projectForGraph = createProject(DEFAULT_TEST_PROJECT_NAME4);
         FindRequest findRequest = new FindRequest();
-//        List<Term> terms = getProjectTerms(projectForGraph.getSystemAttributes().getGUID(), findRequest, true, false);
-//        if (terms != null && terms.size() > 0) {
-//            throw new SubjectAreaFVTCheckedException("ERROR: Expected null or empty got " +terms.size());
-//        }
+/*        List<Term> terms = getProjectTerms(projectForGraph.getSystemAttributes().getGUID(), findRequest, true, false);
+        if (terms != null && terms.size() > 0) {
+            throw new SubjectAreaFVTCheckedException("ERROR: Expected null or empty got " +terms.size());
+        }*/
         // make sure there is a project with the name
         createProject( DEFAULT_TEST_PROJECT_NAME);
         Project projectForUniqueQFN2= createProject(DEFAULT_TEST_PROJECT_NAME);
         if (projectForUniqueQFN2 == null || projectForUniqueQFN2.equals("")) {
             throw new GlossaryAuthorFVTCheckedException("ERROR: Expected qualified name to be set");
+        }
+
+        //create relationhip for a project and retriev it
+        Project project8 = createProject(serverName+" "+DEFAULT_TEST_PROJECT_NAME8);
+        Glossary glossary = glossaryFVT.createGlossary(DEFAULT_TEST_GLOSSARY_NAME);
+        System.out.println("Create a term called " + DEFAULT_TEST_TERM_NAME + " using glossary GUID");
+        String glossaryGuid = glossary.getSystemAttributes().getGUID();
+        Term term1 = termFVT.createTerm(DEFAULT_TEST_TERM_NAME, glossaryGuid);
+        System.out.println("Create a project scope relationship between called " + DEFAULT_TEST_TERM_NAME + " and " + DEFAULT_TEST_PROJECT_NAME8);
+        createProjectScope(project8,term1);
+
+        List<Relationship> prjRelationships = getProjectRelationships(project8);
+        System.out.println(prjRelationships.toString());
+
+        if (prjRelationships.size() != 1) {
+            throw new GlossaryAuthorFVTCheckedException("ERROR: Expected 1 relationship on project got " + prjRelationships.size());
         }
     }
 
@@ -252,7 +297,23 @@ public class ProjectFVT
         return glossaryAuthorViewProjectClient.getAllRelationships(this.userId, project.getSystemAttributes().getGUID());
     }
 
+    protected ProjectScope createProjectScope(Project project, Term term) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, GlossaryAuthorFVTCheckedException {
+        ProjectScope projectScope = new ProjectScope();
+        projectScope.getEnd1().setNodeGuid(project.getSystemAttributes().getGUID());
+        projectScope.getEnd2().setNodeGuid(term.getSystemAttributes().getGUID());
+
+        ResolvableType resolvableType = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, ProjectScope.class);
+        ParameterizedTypeReference<GenericResponse<ProjectScope>> type = ParameterizedTypeReference.forType(resolvableType.getType());
+
+
+        ProjectScope createdProjectScope = glossaryAuthorViewRelationshipsClient.createRel(this.userId, projectScope,type, PROJECT_SCOPE);
+        FVTUtils.validateRelationship(createdProjectScope);
+        System.out.println("CreatedProjectScopeRelationship " + createdProjectScope);
+        return createdProjectScope;
+    }
+
     void deleteRemainingProjects() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, GlossaryAuthorFVTCheckedException {
+
         Iterator<String> iter =  createdProjectsSet.iterator();
         while (iter.hasNext()) {
             String guid = iter.next();

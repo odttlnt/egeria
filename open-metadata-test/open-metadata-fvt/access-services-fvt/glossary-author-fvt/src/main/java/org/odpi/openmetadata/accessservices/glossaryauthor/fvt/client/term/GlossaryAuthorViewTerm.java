@@ -232,5 +232,7 @@ public interface GlossaryAuthorViewTerm {
     ViewServiceConfig getGlossaryAuthViewServiceConfig(String userId) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException;
 
     List<Relationship> getRelationships(String userId, String guid, FindRequest findRequest) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException;
+
+    //List<Term> createMultipleTerms(String userId, String guid, Term[] toArray) throws PropertyServerException;
 }
 

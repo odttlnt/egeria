@@ -39,6 +39,7 @@ public class TermFVT {
     private static final String DEFAULT_TEST_GLOSSARY_NAME = "Test Glossary for term FVT";
     private static final String DEFAULT_TEST_TERM_NAME = "Test term A";
     private static final String DEFAULT_TEST_TERM_NAME_UPDATED = "Test term A updated";
+    private static final String DEFAULT_TEST_TERM_LIST = "Test term Number ";
     private SubjectAreaNodeClient<Term> subjectAreaTerm = null;
     private GlossaryAuthorViewTermClient glossaryAuthorViewTermClient = null;
     private GlossaryFVT glossaryFVT =null;
@@ -369,6 +370,20 @@ public class TermFVT {
             throw new GlossaryAuthorFVTCheckedException("ERROR: Expected qualified name to be set");
         }
 
+/*        //test Multiple terms
+        List<Term> multipleTermList = new ArrayList<Term>();
+
+        for (int i = 1;i <5; i++) {
+            multipleTermList.add(getTermForInput(DEFAULT_TEST_TERM_LIST + String.valueOf(i), glossaryGuid));
+         //   DEFAULT_TEST_TERM_LIST
+        }
+        Term[] termArray = new Term[multipleTermList.size()];
+        termArray = multipleTermList.toArray(termArray);
+
+        List<Term> createdTermList = new ArrayList<Term>();
+        createdTermList = glossaryFVT.createMultipleTerms(userId, glossaryGuid, termArray); // multipleTermList.toArray());
+
+        System.out.println("*****^&*&*& " + createdTermList.toString() + " *****^&*&*& ");*/
         // test categories
 
         Category cat1 = categoryFVT.createCategoryWithGlossaryGuid("cat1", glossaryGuid);
@@ -760,47 +775,6 @@ public class TermFVT {
         if (count !=10) {
             throw new GlossaryAuthorFVTCheckedException("ERROR:  Expected 10 different category term names for ss from first 2 pages " + count);
         }
-//        findRequest.setStartingFrom(0);
-//        List<Term> firstFiveTerms = glossaryFVT.getTerms(glossaryGuid, findRequest);
-//        count = firstFiveTerms.size();
-//        if (count !=5) {
-//            throw new SubjectAreaFVTCheckedException("ERROR: Expected 5 glossary terms for ss, got " + count);
-//        }
-//        Set<String> firstFiveTermsNames = firstFiveTerms.stream()
-//                .map(term ->term.getName()).collect(Collectors.toSet());
-//        count =  firstFiveTermsNames.size();
-//        if (count !=5) {
-//            throw new SubjectAreaFVTCheckedException("ERROR: Expected 5 glossary distinct term names for ss, got " + count);
-//        }
-//        findRequest.setStartingFrom(5);
-//        List<Term> secondFiveTerms =glossaryFVT.getTerms(parentGuid, findRequest);
-//        count =  secondFiveTerms.size();
-//        if (count !=5) {
-//            throw new SubjectAreaFVTCheckedException("ERROR: Expected 5 glossary terms for ss for 2nd page, got " + count);
-//        }
-//        Set<String> secondFiveTermsNames = secondFiveTerms.stream()
-//                .map(term ->term.getName()).collect(Collectors.toSet());
-//        count =  secondFiveTermsNames.size();
-//        if (count !=5) {
-//            throw new SubjectAreaFVTCheckedException("ERROR:  Expected 5 glossary term names for ss for 2nd page " + count);
-//        }
-//        Set<String> totalFiveTermsNames = firstFiveTermsNames;
-//        totalFiveTermsNames.addAll(secondFiveTermsNames);
-//        count = totalFiveCategoryTermsNames.size();
-//        if (count !=10) {
-//            throw new SubjectAreaFVTCheckedException("ERROR:  Expected 10 different glossary term names for ss from first 2 pages " + count);
-//        }
-//
-//        findRequest.setStartingFrom(0);
-//        findRequest.setPageSize(10);
-//        count =  categoryFVT.getTerms(parentGuid, findRequest).size();
-//        if (count !=10) {
-//            throw new SubjectAreaFVTCheckedException("ERROR: Expected 10 terms for ss, got " + count);
-//        }
-//        count = glossaryFVT.getTerms(glossaryGuid, findRequest).size();
-//        if (count !=10) {
-//            throw new SubjectAreaFVTCheckedException("ERROR: Expected 10 glossary terms for ss, got " + count);
-//        }
 
         //cleanup
         for (String termGuid: termGuids) {

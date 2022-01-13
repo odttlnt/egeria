@@ -10,24 +10,18 @@ import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.gloss
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.graph.Relationship;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.term.Term;
 import org.odpi.openmetadata.accessservices.subjectarea.responses.SubjectAreaOMASAPIResponse;
-import org.odpi.openmetadata.accessservices.subjectarea.utils.QueryBuilder;
 import org.odpi.openmetadata.accessservices.subjectarea.utils.QueryParams;
-import org.odpi.openmetadata.accessservices.subjectarea.utils.QueryUtils;
 import org.odpi.openmetadata.commonservices.ffdc.rest.GenericResponse;
 import org.odpi.openmetadata.commonservices.ffdc.rest.ResponseParameterization;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.InvalidParameterException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException;
-import org.odpi.openmetadata.repositoryservices.connectors.stores.metadatacollectionstore.properties.SequencingOrder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.ResolvableType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 //import org.odpi.openmetadata.accessservices.glossaryview.rest.Glossary;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -221,6 +215,37 @@ public class GlossaryAuthorViewGlossaryClient implements GlossaryAuthorViewGloss
     @Override
     public List<Term> getTerms(String userId, String guid, FindRequest findRequest) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException{
         return getTerms(userId, guid, findRequest, false, true,null);
+    }
+
+    @Override
+    public List<Term> createTerms(String userId, String guid, Term[] termArray) throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException {
+        ResolvableType resolvableType = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, Term.class);
+        String urnTemplate = BASE_URL +  "/%s/terms";
+
+        ResolvableType resolvableType1 = ResolvableType.forClassWithGenerics(SubjectAreaOMASAPIResponse.class, resolvableType);
+        System.out.println(resolvableType1.getType().toString());
+        ParameterizedTypeReference<SubjectAreaOMASAPIResponse<SubjectAreaOMASAPIResponse<Term>>> type = ParameterizedTypeReference.forType(resolvableType1.getType());
+
+        //SubjectAreaOMASAPIResponse<SubjectAreaOMASAPIResponse<Term>>
+        //GenericResponse<SubjectAreaOMASAPIResponse> completeResponse =
+                //List<Term> completeResponse =
+                /*client.getByIdRESTCall(userId,guid, getMethodInfo("find"),
+                        type, urlTemplate);*/
+        SubjectAreaOMASAPIResponse<SubjectAreaOMASAPIResponse<Term>> completeResponse =
+             //   client.postRESTCallArr1(userId, getMethodInfo("createMultipleTerms"), urnTemplate, guid, SubjectAreaOMASAPIResponse.class,termArray);
+        client.postRESTCallArr(userId, getMethodInfo("createMultipleTerms"), urnTemplate, guid,type,termArray);
+
+        // client.postRESTCall(userId, getMethodInfo("createMultipleTerms"), urlTemplate, type,termArray);
+        //return completeResponse;
+        List<SubjectAreaOMASAPIResponse<Term>> temp =  completeResponse.results();
+        List<Term> termList = new ArrayList<>();
+        for (GenericResponse<Term> resp: temp){
+            if (resp.results().size() > 0) {
+                termList.add(resp.results().get(0));
+            }
+        }
+        System.out.println(completeResponse.toString());
+        return termList;
     }
 
 

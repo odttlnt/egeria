@@ -39,24 +39,24 @@ public class RunAllFVT
     }
 
     public static void performFVT(String url, String serverName, String userId) throws InvalidParameterException, UserNotAuthorizedException, PropertyServerException, GlossaryAuthorFVTCheckedException {
-      /*  int initialGlossaryCount = GlossaryFVT.getGlossaryCount(url, serverName, userId);
+        int initialGlossaryCount = GlossaryFVT.getGlossaryCount(url, serverName, userId);
         int initialTermCount = TermFVT.getTermCount(url, serverName, userId);
         int initialCategoryCount = CategoryFVT.getCategoryCount(url, serverName, userId);
         int initialSubjectAreaCount = SubjectAreaDefinitionCategoryFVT.getSubjectAreaCount(url, serverName, userId);
-        int initialProjectCount = ProjectFVT.getProjectCount(url,serverName,userId);*/
+        int initialProjectCount = ProjectFVT.getProjectCount(url,serverName,userId);
 
         GlossaryFVT.runIt(url,serverName,userId);
         TermFVT.runIt(url,serverName,userId);
         CategoryFVT.runIt(url,serverName,userId);
-//        CategoryHierarchyFVT.runIt(url,serverName,userId);
-//        RelationshipsFVT.runIt(url,serverName,userId);
-//        ProjectFVT.runIt(url, serverName, userId);
-//        SubjectAreaDefinitionCategoryFVT.runIt(url,serverName,userId);
-//        GraphFVT.runIt(url,serverName,userId);
-//        EffectiveDatesFVT.runIt(url,serverName,userId);
-//        CheckSerializationFVT.runIt(url, serverName, userId);
+        CategoryHierarchyFVT.runIt(url,serverName,userId);
+        RelationshipsFVT.runIt(url,serverName,userId);
+        ProjectFVT.runIt(url, serverName, userId);
+        SubjectAreaDefinitionCategoryFVT.runIt(url,serverName,userId);
+        GraphFVT.runIt(url,serverName,userId);
+        EffectiveDatesFVT.runIt(url,serverName,userId);
+        CheckSerializationFVT.runIt(url, serverName, userId);
         ConfigFVT.runIt(url, serverName, userId);
-/*
+
         int finalGlossaryCount = GlossaryFVT.getGlossaryCount(url,serverName,userId);
         int finalTermCount = TermFVT.getTermCount(url,serverName,userId);
         int finalCategoryCount = CategoryFVT.getCategoryCount(url,serverName,userId);
@@ -77,7 +77,7 @@ public class RunAllFVT
         }
         if (initialProjectCount != finalProjectCount) {
             throw new GlossaryAuthorFVTCheckedException("ERROR: Projects count incorrect; expected " +initialProjectCount + " , got " + finalProjectCount);
-        }*/
+        }
     }
 
     public static String getServerName(String[] args) throws IOException

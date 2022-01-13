@@ -23,6 +23,6 @@ public class RelationshipsIT {
 //    @ValueSource(strings = {"serverinmem","servergraph"})
     @ValueSource(strings = {"serverview"})
     public void testRelationships(String server) {
-//        assertDoesNotThrow(() -> RelationshipsFVT.runIt(StringUtils.defaultIfEmpty(System.getProperty("fvt.url"),FVTConstants.SERVER_PLATFORM_URL_ROOT), server, "garygeeke"));
+        assertDoesNotThrow(() -> RelationshipsFVT.runIt(StringUtils.defaultIfEmpty(System.getProperty("fvt.url"),FVTConstants.SERVER_PLATFORM_URL_ROOT), server, "garygeeke"));
     }
 }

@@ -242,6 +242,7 @@ public class GlossaryAuthorViewTermClient implements GlossaryAuthorViewTerm, Res
     }
 
 
+
     @Override
     public List<ViewServiceConfig> getViewServiceConfigs(String userId) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
 /*

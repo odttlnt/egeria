@@ -24,6 +24,6 @@ public class GraphIT {
  //   @ValueSource(strings = {"serverinmem","servergraph"})
     @ValueSource(strings = {"serverview"})
     public void testGraph(String server) {
-//        assertDoesNotThrow(() -> GraphFVT.runIt(StringUtils.defaultIfEmpty(System.getProperty("fvt.url"),FVTConstants.SERVER_PLATFORM_URL_ROOT), server, "garygeeke"));
+        assertDoesNotThrow(() -> GraphFVT.runIt(StringUtils.defaultIfEmpty(System.getProperty("fvt.url"),FVTConstants.SERVER_PLATFORM_URL_ROOT), server, "garygeeke"));
     }
 }

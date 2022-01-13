@@ -854,4 +854,54 @@ public class GlossaryAuthorViewRestClient extends FFDCRESTClient {
                     t,
                     true);
     }
+//    SubjectAreaOMASAPIResponse<SubjectAreaOMASAPIResponse<Term>>
+    public SubjectAreaOMASAPIResponse<SubjectAreaOMASAPIResponse<Term>> postRESTCallArr(String userId, String methodName, String urlTemplate, String guid, ParameterizedTypeReference<SubjectAreaOMASAPIResponse<SubjectAreaOMASAPIResponse<Term>>> type, Term[] termArray) throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException {
+        if (log.isDebugEnabled()) {
+            log.debug("==> Method: " + methodName + ",userId=" + userId);
+        }
+
+        String expandedURL = String.format(serverPlatformURLRoot + urlTemplate , serverName, userId, guid);
+
+        System.out.println(expandedURL);
+
+        if (log.isDebugEnabled()) {
+            log.debug("<== Glossary successful method : " + methodName + ",userId=" + userId);
+        }
+
+        //SubjectAreaOMASAPIResponse<SubjectAreaOMASAPIResponse>
+        SubjectAreaOMASAPIResponse<SubjectAreaOMASAPIResponse<Term>>  completeResponse = callPostRESTCall(methodName,type,expandedURL, termArray);
+        exceptionHandler.detectAndThrowStandardExceptions(methodName, completeResponse);
+
+        if (log.isDebugEnabled()) {
+            log.debug("<== successful method : " + methodName + ",userId=" + userId);
+        }
+
+        return completeResponse;
+        //return callPostRESTCall(methodName,type,expandedURL, termArray);
+    }
+
+    public GenericResponse postRESTCallArr1(String userId, String methodName, String urlTemplate, String guid, Class<SubjectAreaOMASAPIResponse> returnClass, Term[] termArray) throws PropertyServerException {
+        if (log.isDebugEnabled()) {
+            log.debug("==> Method: " + methodName + ",userId=" + userId);
+        }
+
+        String expandedURL = String.format(serverPlatformURLRoot + urlTemplate , serverName, userId, guid);
+
+        System.out.println(expandedURL);
+
+        if (log.isDebugEnabled()) {
+            log.debug("<== Glossary successful method : " + methodName + ",userId=" + userId);
+        }
+
+        //SubjectAreaOMASAPIResponse<SubjectAreaOMASAPIResponse>
+        GenericResponse  completeResponse = callPostRESTCall(methodName,returnClass,expandedURL, termArray);
+        //exceptionHandler.detectAndThrowStandardExceptions(methodName, completeResponse);
+
+        if (log.isDebugEnabled()) {
+            log.debug("<== successful method : " + methodName + ",userId=" + userId);
+        }
+
+        return completeResponse;
+        //return callPostRESTCall(methodName,type,expandedURL, termArray);
+    }
 }

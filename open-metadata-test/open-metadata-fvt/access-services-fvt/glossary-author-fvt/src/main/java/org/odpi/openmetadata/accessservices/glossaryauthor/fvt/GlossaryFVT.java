@@ -4,7 +4,7 @@ package org.odpi.openmetadata.accessservices.glossaryauthor.fvt;
 
 import org.odpi.openmetadata.accessservices.glossaryauthor.fvt.client.GlossaryAuthorViewRestClient;
 import org.odpi.openmetadata.accessservices.glossaryauthor.fvt.client.glossarys.GlossaryAuthorViewGlossaryClient;
-import org.odpi.openmetadata.accessservices.subjectarea.client.SubjectAreaNodeClient;
+import org.odpi.openmetadata.accessservices.glossaryauthor.fvt.client.term.GlossaryAuthorViewTermClient;
 //import org.odpi.openmetadata.accessservices.subjectarea.client.nodes.glossaries.GlossaryAuthorViewGlossaryClient;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.category.Category;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.common.FindRequest;
@@ -12,6 +12,7 @@ import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.gloss
 //import org.odpi.openmetadata.accessservices.glossaryview.rest.Glossary;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.glossary.Taxonomy;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.graph.Relationship;
+import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.nodesummary.GlossarySummary;
 import org.odpi.openmetadata.accessservices.subjectarea.properties.objects.term.Term;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.InvalidParameterException;
 import org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException;
@@ -28,11 +29,14 @@ public class GlossaryFVT {
     private static final String DEFAULT_TEST_GLOSSARY_NAME = "Testglossary1";
     private static final String DEFAULT_TEST_GLOSSARY_NAME2 = "Testglossary2";
     private static final String DEFAULT_TEST_GLOSSARY_NAME3 = "Testglossary3";
+    private static final String DEFAULT_TEST_TERM_LIST = "Test term Number ";
 //    private SubjectAreaNodeClient<Glossary> subjectAreaGlossary = null;
     private GlossaryAuthorViewGlossaryClient glossaryAuthorViewGlossaryClient = null;
+    private GlossaryAuthorViewTermClient glossaryAuthorViewTermClient = null;
     private String serverName = null;
     private String userId = null;
     private int existingGlossaryCount = 0;
+
     /*
      * Keep track of all the created guids in this set, by adding create and restore guids and removing when deleting.
      * At the end of the test it will delete any remaining guids.
@@ -46,6 +50,7 @@ public class GlossaryFVT {
        // GlossaryAuthorViewGlossaryClient glossaryAuthorViewGlossaryClient = new GlossaryAuthorViewGlossaryClient(client);
         //glossaryAuthorViewGlossaryClient = (GlossaryAuthorViewGlossaryClient)subjectAreaGlossary;
         this.glossaryAuthorViewGlossaryClient = new GlossaryAuthorViewGlossaryClient(client);
+        this.glossaryAuthorViewTermClient = new GlossaryAuthorViewTermClient(client);
         this.serverName = serverName;
         this.userId = userId;
         createdGlossariesSet = new HashSet<>();
@@ -170,7 +175,50 @@ public class GlossaryFVT {
         if (glossaryForUniqueQFN2 == null || glossaryForUniqueQFN2.equals("")) {
             throw new GlossaryAuthorFVTCheckedException("ERROR: Expected qualified name to be set");
         }
+        //test Multiple terms
+        String glossaryForUniqueQFN2Guid = glossaryForUniqueQFN2.getSystemAttributes().getGUID();
+        List<Term> multipleTermList = new ArrayList<Term>();
+
+        for (int i = 1;i <5; i++) {
+            multipleTermList.add(getTermForInput(DEFAULT_TEST_TERM_LIST + String.valueOf(i), glossaryForUniqueQFN2Guid));
+            //   DEFAULT_TEST_TERM_LIST
+        }
+        Term[] termArray = new Term[multipleTermList.size()];
+        termArray = multipleTermList.toArray(termArray);
+
+        List<Term> createdTermList = new ArrayList<Term>();
+        createdTermList = createMultipleTerms(userId, glossaryForUniqueQFN2Guid, termArray); // multipleTermList.toArray());
+
+        System.out.println("*****^&*&*& " + createdTermList.toString() + " *****^&*&*& ");
+
+        FindRequest findRequest = new FindRequest();
+        findRequest.setSearchCriteria("");
+        List<Term> termList = getTerms(glossaryForUniqueQFN2Guid, findRequest);
+        if (termList.size() != 4) {
+            throw new GlossaryAuthorFVTCheckedException("ERROR: Expected 4 back on getGlossaryTerms for multipleCreate got " + results.size());
+        }
+        deleteTermsOnGlossary(userId,glossaryForUniqueQFN2Guid);
     }
+
+    private void deleteTermsOnGlossary(String userId, String glossaryForUniqueQFN2Guid) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
+        FindRequest findRequest = new FindRequest();
+        findRequest.setSearchCriteria("");
+        List<Term> termList = getTerms(glossaryForUniqueQFN2Guid, findRequest);
+        for (Term term: termList) {
+            glossaryAuthorViewTermClient.delete(userId, term.getSystemAttributes().getGUID());
+        }
+    }
+
+
+    public Term getTermForInput(String termName, String glossaryGuid) {
+        Term term = new Term();
+        term.setName(termName);
+        GlossarySummary glossarySummary = new GlossarySummary();
+        glossarySummary.setGuid(glossaryGuid);
+        term.setGlossary(glossarySummary);
+        return term;
+    }
+
 
     void deleteRemainingGlossaries() throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException, GlossaryAuthorFVTCheckedException {
         Iterator<String> iter =  createdGlossariesSet.iterator();
@@ -306,4 +354,9 @@ public class GlossaryFVT {
     public List<Term> getTerms(String glossaryGuid, FindRequest findRequest) throws InvalidParameterException, PropertyServerException, UserNotAuthorizedException {
         return glossaryAuthorViewGlossaryClient.getTerms(userId, glossaryGuid, findRequest);
     }
+
+    public List<Term> createMultipleTerms(String userId, String guid, Term[] termArray) throws PropertyServerException, InvalidParameterException, UserNotAuthorizedException {
+         return glossaryAuthorViewGlossaryClient.createTerms(userId,guid,termArray);
+    }
+
 }
