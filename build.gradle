@@ -104,7 +104,7 @@ allprojects {
 	    jakartavalidationVersion = '3.0.1'
         javassistVersion = '3.28.0-GA'
         jaxbVersion = '2.3.1'
-        jenaVersion = '4.2.0'
+        jenaVersion = '4.3.2'
         jodatimeVersion = '2.10.13'
         jsonldVersion = '0.13.4'
         junitVersion = '4.13.2'
