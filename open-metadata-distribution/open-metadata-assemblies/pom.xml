@@ -12,6 +12,7 @@
         <groupId>org.odpi.egeria</groupId>
         <version>3.5-SNAPSHOT</version>
     </parent>
+    <!-- Copyright Contributors to the ODPi Egeria project.  -->
 
     <name>Open Metadata Assemblies</name>
     <description>
