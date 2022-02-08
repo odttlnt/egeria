@@ -88,7 +88,7 @@ allprojects {
         elasticsearchVersion = '7.15.2'
         findbugsVersion = '3.0.2'
         glassfishVersion = '1.1.4'
-        gremlinVersion = '3.5.1'
+        gremlinVersion = '3.5.2'
         groovyVersion = '3.0.9'
         guavaVersion = '31.0.1-jre'
         hamcrestVersion = '2.2'
