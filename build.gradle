@@ -54,7 +54,7 @@ allprojects {
     // Assign variables for any constraints
 
     ext {
-        antlrVersion = '3.5.2'
+        antlrVersion = '3.5.3'
         avroVersion = '1.11.0'
         classgraphVersion = '4.8.141'
         classmateVersion = '1.5.1'
