@@ -200,7 +200,7 @@
         <sleepycat.version>18.3.12</sleepycat.version>
         <joda.version>2.10.13</joda.version>
         <jackson-asl.version>1.9.14-atlassian-6</jackson-asl.version>
-        <antlr.version>3.5.2</antlr.version>
+        <antlr.version>3.5.3</antlr.version>
         <snappy.version>1.1.8.4</snappy.version>
         <swagger.version>2.1.13</swagger.version>
         <snakeyaml.version>1.30</snakeyaml.version>
