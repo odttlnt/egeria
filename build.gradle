@@ -100,7 +100,7 @@ allprojects {
         openlineageVersion = '0.5.2'
         mockitoVersion = '4.3.1'
         ossVersion = '4.14.0'
-        plexusVersion = '3.4.1'
+        plexusVersion = '3.4.2'
         prometheusVersion = '1.8.3'
         quartzVersion = '2.3.2'
         reflectionsVersion = '0.10.2'
