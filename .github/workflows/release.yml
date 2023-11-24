@@ -22,7 +22,7 @@ jobs:
     name: "Release"
     if: startsWith(github.repository,'odpi/')
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout source
       # Prep for docker builds
       - name: Set up Docker Buildx
