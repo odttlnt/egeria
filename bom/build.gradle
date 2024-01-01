@@ -113,7 +113,7 @@ ext {
     log4jVersion = '2.22.0'
     jacksonjdk8Version = '2.16.0'
     reactivestreamsVersion = '1.0.4'
-    springdocStarterVersion = '2.2.0'
+    springdocStarterVersion = '2.3.0'
     jacocoVersion = '0.8.8'
     snakeYamlVersion = '2.2'
 }
