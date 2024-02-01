@@ -93,7 +93,7 @@ ext {
     snappyVersion = '1.1.10.5'
     springbootVersion = '3.1.4'
     spotbugsVersion = '4.7.3'
-    springdataVersion = '3.0.3'
+    springdataVersion = '3.2.2'
     springldapVersion = '3.0.1'
     springsecurityVersion = '6.1.4'
     springsecurityJwtVersion = '1.1.1.RELEASE'
